@@ -113,8 +113,8 @@
 
   <script>
     // NOTE: This API key is restricted (or should be) to:
-    //   - HTTP referrer: this site's domain only
-    //   - API scope: Google Calendar API (read-only) only
+    //    - HTTP referrer: this site's domain only
+    //    - API scope: Google Calendar API (read-only) only
     // Restrict it in Google Cloud Console > Credentials before deploying publicly.
     // A key with no restrictions is usable by anyone who views this page's source.
     var API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
@@ -194,7 +194,17 @@
           if (!targetDiv) return;
 
           targetDiv.className = (data.status === 'warning') ? 'parking-box-warning' : 'parking-box-clear';
-          targetDiv.innerHTML = data.message;
+          
+          if (data.status === 'warning' && data.nchUrl) {
+            targetDiv.innerHTML = data.message + 
+              '<div style="margin-top: 6px;">' +
+              '<a href="' + data.nchUrl + '" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; font-weight: bold;">' +
+              'Click here to see details of these events' +
+              '</a>' +
+              '</div>';
+          } else {
+            targetDiv.innerHTML = data.message;
+          }
         })
         .catch(function(err) {
           console.error('Parking check failed:', err);
