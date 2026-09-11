@@ -117,14 +117,13 @@
 
     var url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' + params.toString();
 
-    // Helper to produce strict format: "Friday, 11 Sep 2026"
     function formatCustomDate(dateObj) {
       var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       var dayName = days[dateObj.getDay()];
-      var dayNum = dateObj.getDate(); // Non-padded (1-31)
-      var monthName = months[dateObj.getMonth()]; // 3-letter month
+      var dayNum = dateObj.getDate();
+      var monthName = months[dateObj.getMonth()];
       var year = dateObj.getFullYear();
 
       return dayName + ', ' + dayNum + ' ' + monthName + ' ' + year;
@@ -154,7 +153,6 @@
     }
 
     function checkParkingImpact(rehearsalRawStart, targetElementId) {
-      // Ensure the value passed to worker is always a clean ISO string
       var isoParam = new Date(rehearsalRawStart).toISOString();
       var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev?rehearsalTime=' + encodeURIComponent(isoParam);
 
