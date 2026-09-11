@@ -62,47 +62,59 @@
     <a class="btn" href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin">Open Full Calendar</a>
   </div>
 
-  <script>
-    const API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
-    const CALENDAR_ID = encodeURIComponent('rtephilschedule@gmail.com');
-    const encodedCalId = encodeURIComponent(CALENDAR_ID);
-    const now = new Date().toISOString();
+  const API_KEY = 'YOUR_API_KEY';
+const CALENDAR_ID = 'rtephilschedule@gmail.com';
+const encodedCalId = encodeURIComponent(CALENDAR_ID);
 
-    // Query Google Calendar API for the single next upcoming event
-    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedCalId}/events?key=${API_KEY}&timeMin=${now}&singleEvents=true&orderBy=startTime&maxResults=1`;
+// Set timeMin to the very start of today (00:00:00) in local time 
+// so events happening later today are not filtered out.
+const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0);
+const timeMin = startOfToday.toISOString();
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        const display = document.getElementById('event-display');
-        
-        if (data.items && data.items.length > 0) {
-          const event = data.items[0];
-          const title = event.summary || 'Untitled Event';
-          const location = event.location ? ` at <strong>${event.location}</strong>` : '';
-          
-          // Parse event start time
-          let dateStr = '';
-          if (event.start.dateTime) {
-            const startDate = new Date(event.start.dateTime);
-            dateStr = startDate.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-          } else if (event.start.date) {
-            // All-day event
-            const startDate = new Date(event.start.date);
-            dateStr = startDate.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ' (All Day)';
-          }
+// Fetch events from the start of today onwards
+const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedCalId}/events?key=${API_KEY}&timeMin=${timeMin}&singleEvents=true&orderBy=startTime&maxResults=5`;
 
-          // Build narrative description
-          display.innerHTML = `<strong>Next Up:</strong> Our next meeting is <strong>${title}</strong> scheduled for <strong>${dateStr}</strong>${location}.`;
-        } else {
-          display.innerHTML = 'There are currently no upcoming events scheduled.';
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching calendar event:', error);
-        document.getElementById('event-display').innerHTML = 'Unable to load upcoming event details at this time.';
+fetch(url)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    const display = document.getElementById('event-display');
+    const currentTime = new Date();
+
+    if (data.items && data.items.length > 0) {
+      // Find the first event that hasn't ended yet
+      const upcomingEvent = data.items.find(event => {
+        const endTime = event.end.dateTime ? new Date(event.end.dateTime) : new Date(event.end.date + 'T23:59:59');
+        return endTime >= currentTime;
       });
-  </script>
 
-</body>
-</html>
+      if (upcomingEvent) {
+        const title = upcomingEvent.summary || 'Untitled Event';
+        const location = upcomingEvent.location ? ` at <strong>${upcomingEvent.location}</strong>` : '';
+        
+        let dateStr = '';
+        if (upcomingEvent.start && upcomingEvent.start.dateTime) {
+          const startDate = new Date(upcomingEvent.start.dateTime);
+          dateStr = startDate.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } else if (upcomingEvent.start && upcomingEvent.start.date) {
+          const startDate = new Date(upcomingEvent.start.date + 'T00:00:00');
+          dateStr = startDate.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ' (All Day)';
+        }
+
+        display.innerHTML = `<strong>Next Up:</strong> Our next meeting is <strong>${title}</strong> scheduled for <strong>${dateStr}</strong>${location}.`;
+      } else {
+        display.innerHTML = 'There are currently no upcoming events scheduled.';
+      }
+    } else {
+      display.innerHTML = 'There are currently no upcoming events scheduled.';
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching calendar event:', error);
+    document.getElementById('event-display').innerHTML = `Unable to load event details (${error.message}).`;
+  });
