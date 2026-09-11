@@ -31,7 +31,7 @@
       border-left: 4px solid #1a73e8;
       padding: 12px 16px;
       text-align: left;
-      margin: 20px 0;
+      margin: 20px 0 8px 0;
       border-radius: 4px;
     }
 
@@ -40,7 +40,7 @@
       border-left: 4px solid #5f6368;
       padding: 12px 16px;
       text-align: left;
-      margin: 15px 0;
+      margin: 20px 0 8px 0;
       border-radius: 4px;
     }
     .btn {
@@ -54,25 +54,36 @@
       border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
+      margin-top: 15px;
     }
     .parking-box-warning {
       background: #fef3c7;
       border-left: 4px solid #f59e0b;
-      padding: 12px 16px;
+      padding: 10px 14px;
       text-align: left;
-      margin: 15px 0;
+      margin-bottom: 15px;
       border-radius: 4px;
       color: #92400e;
+      font-size: 14px;
     }
 
     .parking-box-clear {
       background: #dcfce7;
       border-left: 4px solid #10b981;
-      padding: 12px 16px;
+      padding: 10px 14px;
       text-align: left;
-      margin: 15px 0;
+      margin-bottom: 15px;
       border-radius: 4px;
       color: #065f46;
+      font-size: 14px;
+    }
+
+    .parking-loading {
+      text-align: left;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 15px;
+      padding-left: 4px;
     }
   </style>
 </head>
@@ -82,7 +93,6 @@
     <h2>National Symphony Chorus</h2>
     <p>Add this page to your home screen to save the shortcut icon.</p>
     
-    <!-- Target Container for JS Insertion -->
     <div id="events-container">
       <p style="text-align: center; color: #666;"><em>Loading upcoming events...</em></p>
     </div>
@@ -140,23 +150,26 @@
       return { title: title, dateStr: dateStr, timeStr: timeStr, venue: venue };
     }
 
-    // Function to ping Cloudflare Worker for parking impacts
-    function checkParkingImpact(rehearsalIsoTime) {
-      var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev/.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
+    function checkParkingImpact(rehearsalIsoTime, targetElementId) {
+      // Replace YOUR_WORKER_SUBDOMAIN with your Cloudflare subdomain name
+      var workerUrl = 'https://nch-parking-checker.YOUR_WORKER_SUBDOMAIN.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
 
       fetch(workerUrl)
         .then(function(res) { return res.json(); })
         .then(function(data) {
-          var container = document.getElementById('events-container');
-          if (!container) return;
+          var targetDiv = document.getElementById(targetElementId);
+          if (!targetDiv) return;
 
-          var parkingDiv = document.createElement('div');
-          parkingDiv.className = (data.status === 'warning') ? 'parking-box-warning' : 'parking-box-clear';
-          parkingDiv.innerHTML = data.message;
-          container.appendChild(parkingDiv);
+          targetDiv.className = (data.status === 'warning') ? 'parking-box-warning' : 'parking-box-clear';
+          targetDiv.innerHTML = data.message;
         })
         .catch(function(err) {
           console.error('Parking check failed:', err);
+          var targetDiv = document.getElementById(targetElementId);
+          if (targetDiv) {
+            targetDiv.className = 'parking-loading';
+            targetDiv.innerHTML = '<em>Unable to verify parking status.</em>';
+          }
         });
     }
 
@@ -190,16 +203,17 @@
         if (upcomingEvents.length > 0) {
           var htmlOutput = '';
 
-          // First Event Block (Blue Accent)
+          // First Event Block
           var first = formatEventDetails(upcomingEvents[0]);
           htmlOutput += '<div class="event-box">' +
             '<strong>Next Event:</strong> ' + first.title + '<br>' +
             '<strong>Date:</strong> ' + first.dateStr + '<br>' +
             '<strong>Time:</strong> ' + first.timeStr + '<br>' +
             '<strong>Venue:</strong> ' + first.venue +
-            '</div>';
+            '</div>' +
+            '<div id="parking-status-0" class="parking-loading"><em>Checking NCH parking...</em></div>';
 
-          // Second Event Block (Slate Gray Accent)
+          // Second Event Block
           if (upcomingEvents.length > 1) {
             var second = formatEventDetails(upcomingEvents[1]);
             htmlOutput += '<div class="event-box-secondary">' +
@@ -207,15 +221,24 @@
               '<strong>Date:</strong> ' + second.dateStr + '<br>' +
               '<strong>Time:</strong> ' + second.timeStr + '<br>' +
               '<strong>Venue:</strong> ' + second.venue +
-              '</div>';
+              '</div>' +
+              '<div id="parking-status-1" class="parking-loading"><em>Checking NCH parking...</em></div>';
           }
 
           container.innerHTML = htmlOutput;
 
-          // Trigger parking check using the start date/time of the next rehearsal
-          var nextEventStart = upcomingEvents[0].start.dateTime || upcomingEvents[0].start.date;
-          if (nextEventStart) {
-            checkParkingImpact(nextEventStart);
+          // Trigger parking check for Event 1
+          var firstStart = upcomingEvents[0].start.dateTime || upcomingEvents[0].start.date;
+          if (firstStart) {
+            checkParkingImpact(firstStart, 'parking-status-0');
+          }
+
+          // Trigger parking check for Event 2
+          if (upcomingEvents.length > 1) {
+            var secondStart = upcomingEvents[1].start.dateTime || upcomingEvents[1].start.date;
+            if (secondStart) {
+              checkParkingImpact(secondStart, 'parking-status-1');
+            }
           }
 
         } else {
