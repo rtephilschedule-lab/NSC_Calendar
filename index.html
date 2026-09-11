@@ -55,6 +55,25 @@
       text-decoration: none;
       font-weight: bold;
     }
+    .parking-box-warning {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 16px;
+      text-align: left;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #92400e;
+    }
+
+    .parking-box-clear {
+      background: #dcfce7;
+      border-left: 4px solid #10b981;
+      padding: 12px 16px;
+      text-align: left;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #065f46;
+    }
   </style>
 </head>
 <body>
@@ -121,6 +140,26 @@
       return { title: title, dateStr: dateStr, timeStr: timeStr, venue: venue };
     }
 
+    // Function to ping Cloudflare Worker for parking impacts
+    function checkParkingImpact(rehearsalIsoTime) {
+      var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev/.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
+
+      fetch(workerUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var container = document.getElementById('events-container');
+          if (!container) return;
+
+          var parkingDiv = document.createElement('div');
+          parkingDiv.className = (data.status === 'warning') ? 'parking-box-warning' : 'parking-box-clear';
+          parkingDiv.innerHTML = data.message;
+          container.appendChild(parkingDiv);
+        })
+        .catch(function(err) {
+          console.error('Parking check failed:', err);
+        });
+    }
+
     fetch(url)
       .then(function(response) {
         if (!response.ok) {
@@ -172,6 +211,13 @@
           }
 
           container.innerHTML = htmlOutput;
+
+          // Trigger parking check using the start date/time of the next rehearsal
+          var nextEventStart = upcomingEvents[0].start.dateTime || upcomingEvents[0].start.date;
+          if (nextEventStart) {
+            checkParkingImpact(nextEventStart);
+          }
+
         } else {
           container.innerHTML = '<div class="event-box">There are currently no upcoming events scheduled.</div>';
         }
