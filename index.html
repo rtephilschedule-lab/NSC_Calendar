@@ -26,12 +26,21 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     h2 { margin-top: 0; color: #1a73e8; }
-    .event-box {
+   .event-box {
       background: #e8f0fe;
       border-left: 4px solid #1a73e8;
       padding: 12px 16px;
       text-align: left;
       margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .event-box-secondary {
+      background: #f0f4f8;
+      border-left: 4px solid #5f6368;
+      padding: 12px 16px;
+      text-align: left;
+      margin: 15px 0;
       border-radius: 4px;
     }
     .btn {
@@ -65,6 +74,7 @@
  <!-- Wrap the JavaScript inside script tags -->
   <script>
     var API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
+    var API_KEY = 'YOUR_ACTUAL_API_KEY_HERE';
     var CALENDAR_ID = 'rtephilschedule@gmail.com';
 
     var startOfToday = new Date();
@@ -75,10 +85,44 @@
       timeMin: startOfToday.toISOString(),
       singleEvents: 'true',
       orderBy: 'startTime',
-      maxResults: '5'
+      maxResults: '10'
     });
 
     var url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' + params.toString();
+
+    // Helper function to format raw Google Calendar date/time
+    function formatEventDetails(event) {
+      var title = event.summary || 'Untitled Event';
+      var venue = event.location || 'Not Specified';
+      var dateStr = '';
+      var timeStr = '';
+
+      if (event.start && event.start.dateTime) {
+        var startDate = new Date(event.start.dateTime);
+        dateStr = startDate.toLocaleDateString('en-GB', { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric' 
+        });
+        timeStr = startDate.toLocaleTimeString('en-GB', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: false 
+        });
+      } else if (event.start && event.start.date) {
+        var startDate = new Date(event.start.date + 'T00:00:00');
+        dateStr = startDate.toLocaleDateString('en-GB', { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric' 
+        });
+        timeStr = 'All Day';
+      }
+
+      return { title: title, dateStr: dateStr, timeStr: timeStr, venue: venue };
+    }
 
     fetch(url)
       .then(function(response) {
@@ -88,73 +132,56 @@
         return response.json();
       })
       .then(function(data) {
-        var display = document.getElementById('event-display');
+        var container = document.getElementById('events-container');
         var currentTime = new Date();
+        var upcomingEvents = [];
 
         if (data.items && data.items.length > 0) {
-          var upcomingEvent = null;
+          // Filter to collect up to 2 future events
           for (var i = 0; i < data.items.length; i++) {
             var item = data.items[i];
             var endTime = item.end.dateTime ? new Date(item.end.dateTime) : new Date(item.end.date + 'T23:59:59');
             if (endTime >= currentTime) {
-              upcomingEvent = item;
+              upcomingEvents.push(item);
+            }
+            if (upcomingEvents.length === 2) {
               break;
             }
           }
+        }
 
-          if (upcomingEvent) {
-            var title = upcomingEvent.summary || 'Untitled Event';
-            var venue = upcomingEvent.location || 'Not Specified';
-            
-            var dateStr = '';
-            var timeStr = '';
+        if (upcomingEvents.length > 0) {
+          var htmlOutput = '';
 
-            if (upcomingEvent.start && upcomingEvent.start.dateTime) {
-              var startDate = new Date(upcomingEvent.start.dateTime);
-              
-              // Formats to: Friday 11 Sep 2026
-              dateStr = startDate.toLocaleDateString('en-GB', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-              });
+          // First Event Block (Blue Line)
+          var first = formatEventDetails(upcomingEvents[0]);
+          htmlOutput += '<div class="event-box">' +
+            '<strong>Next Event:</strong> ' + first.title + '<br>' +
+            '<strong>Date:</strong> ' + first.dateStr + '<br>' +
+            '<strong>Time:</strong> ' + first.timeStr + '<br>' +
+            '<strong>Venue:</strong> ' + first.venue +
+            '</div>';
 
-              // Formats to 24-hour time: 17:00
-              timeStr = startDate.toLocaleTimeString('en-GB', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: false 
-              });
-            } else if (upcomingEvent.start && upcomingEvent.start.date) {
-              var startDate = new Date(upcomingEvent.start.date + 'T00:00:00');
-              dateStr = startDate.toLocaleDateString('en-GB', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-              });
-              timeStr = 'All Day';
-            }
-
-            // Line-by-line layout
-            display.innerHTML = 
-              '<strong>Next Event:</strong> ' + title + '<br>' +
-              '<strong>Date:</strong> ' + dateStr + '<br>' +
-              '<strong>Time:</strong> ' + timeStr + '<br>' +
-              '<strong>Venue:</strong> ' + venue;
-          } else {
-            display.innerHTML = 'There are currently no upcoming events scheduled.';
+          // Second Event Block (Slate Gray Line)
+          if (upcomingEvents.length > 1) {
+            var second = formatEventDetails(upcomingEvents[1]);
+            htmlOutput += '<div class="event-box-secondary">' +
+              '<strong>Following Event:</strong> ' + second.title + '<br>' +
+              '<strong>Date:</strong> ' + second.dateStr + '<br>' +
+              '<strong>Time:</strong> ' + second.timeStr + '<br>' +
+              '<strong>Venue:</strong> ' + second.venue +
+              '</div>';
           }
+
+          container.innerHTML = htmlOutput;
         } else {
-          display.innerHTML = 'There are currently no upcoming events scheduled.';
+          container.innerHTML = '<div class="event-box">There are currently no upcoming events scheduled.</div>';
         }
       })
       .catch(function(error) {
-        console.error('Error fetching calendar event:', error);
-        document.getElementById('event-display').innerHTML = 'Unable to load event details (' + error.message + ').';
+        console.error('Error fetching calendar events:', error);
+        document.getElementById('events-container').innerHTML = '<div class="event-box">Unable to load event details (' + error.message + ').</div>';
       });
   </script>
-
 </body>
 </html>
