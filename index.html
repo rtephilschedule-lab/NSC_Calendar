@@ -117,6 +117,19 @@
 
     var url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' + params.toString();
 
+    // Helper to produce strict format: "Friday, 11 Sep 2026"
+    function formatCustomDate(dateObj) {
+      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      var dayName = days[dateObj.getDay()];
+      var dayNum = dateObj.getDate(); // Non-padded (1-31)
+      var monthName = months[dateObj.getMonth()]; // 3-letter month
+      var year = dateObj.getFullYear();
+
+      return dayName + ', ' + dayNum + ' ' + monthName + ' ' + year;
+    }
+
     function formatEventDetails(event) {
       var title = event.summary || 'Untitled Event';
       var venue = event.location || 'Not Specified';
@@ -125,12 +138,7 @@
 
       if (event.start && event.start.dateTime) {
         var startDate = new Date(event.start.dateTime);
-        dateStr = startDate.toLocaleDateString('en-GB', { 
-          weekday: 'long', 
-          day: 'numeric', 
-          month: 'short', 
-          year: 'numeric' 
-        });
+        dateStr = formatCustomDate(startDate);
         timeStr = startDate.toLocaleTimeString('en-GB', { 
           hour: '2-digit', 
           minute: '2-digit', 
@@ -138,21 +146,17 @@
         });
       } else if (event.start && event.start.date) {
         var startDate = new Date(event.start.date + 'T00:00:00');
-        dateStr = startDate.toLocaleDateString('en-GB', { 
-          weekday: 'long', 
-          day: 'numeric', 
-          month: 'short', 
-          year: 'numeric' 
-        });
+        dateStr = formatCustomDate(startDate);
         timeStr = 'All Day';
       }
 
       return { title: title, dateStr: dateStr, timeStr: timeStr, venue: venue };
     }
 
-    function checkParkingImpact(rehearsalIsoTime, targetElementId) {
-      // Replace YOUR_WORKER_SUBDOMAIN with your Cloudflare subdomain name
-      var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
+    function checkParkingImpact(rehearsalRawStart, targetElementId) {
+      // Ensure the value passed to worker is always a clean ISO string
+      var isoParam = new Date(rehearsalRawStart).toISOString();
+      var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev?rehearsalTime=' + encodeURIComponent(isoParam);
 
       fetch(workerUrl)
         .then(function(res) { return res.json(); })
