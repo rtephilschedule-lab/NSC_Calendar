@@ -25,12 +25,6 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    p.instruction {
-      margin-top: 0;
-      margin-bottom: 16px;
-      color: #666;
-      font-size: 14px;
-    }
     .top-btn {
       display: block;
       width: calc(100% - 32px);
@@ -110,8 +104,6 @@
 <body>
 
   <div class="card">
-    <p class="instruction">Add this page to your home screen to save the shortcut icon.</p>
-
     <a class="top-btn" href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" rel="noopener noreferrer">
       Click here to Open the National Symphony Chorus<br>Rehearsal &amp; Performance Calendar
     </a>
@@ -240,7 +232,7 @@
             if (endTime >= currentTime) {
               upcomingEvents.push(item);
             }
-            if (upcomingEvents.length === 2) {
+            if (upcomingEvents.length === 10) {
               break;
             }
           }
@@ -249,47 +241,29 @@
         if (upcomingEvents.length > 0) {
           var htmlOutput = '';
 
-          // First Event Group
-          var first = formatEventDetails(upcomingEvents[0]);
-          htmlOutput += '<div class="event-group-primary">' +
-            '<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 15px;">Next Event</div>' +
-            '<div style="line-height: 1.5;">' +
-            '<strong>Event:</strong> ' + first.title + '<br>' +
-            '<strong>Date:</strong> ' + first.dateStr + '<br>' +
-            '<strong>Time:</strong> ' + first.timeStr + '<br>' +
-            '<strong>Venue:</strong> ' + first.venue +
-            '</div>' +
-            '<div id="parking-status-0" class="parking-loading"><em>Checking NCH parking...</em></div>' +
-            '</div>';
+          for (var i = 0; i < upcomingEvents.length; i++) {
+            var ev = formatEventDetails(upcomingEvents[i]);
+            var groupClass = (i % 2 === 0) ? 'event-group-primary' : 'event-group-secondary';
+            var labelColor = (i % 2 === 0) ? '#1a73e8' : '#c2410c';
 
-          // Second Event Group
-          if (upcomingEvents.length > 1) {
-            var second = formatEventDetails(upcomingEvents[1]);
-            htmlOutput += '<div class="event-group-secondary">' +
-              '<div style="font-weight: bold; color: #c2410c; margin-bottom: 8px; font-size: 15px;">Following Event</div>' +
+            htmlOutput += '<div class="' + groupClass + '">' +
+              '<div style="font-weight: bold; color: ' + labelColor + '; margin-bottom: 8px; font-size: 15px;">Future Event Number ' + (i + 1) + '</div>' +
               '<div style="line-height: 1.5;">' +
-              '<strong>Event:</strong> ' + second.title + '<br>' +
-              '<strong>Date:</strong> ' + second.dateStr + '<br>' +
-              '<strong>Time:</strong> ' + second.timeStr + '<br>' +
-              '<strong>Venue:</strong> ' + second.venue +
+              '<strong>Event:</strong> ' + ev.title + '<br>' +
+              '<strong>Date:</strong> ' + ev.dateStr + '<br>' +
+              '<strong>Time:</strong> ' + ev.timeStr + '<br>' +
+              '<strong>Venue:</strong> ' + ev.venue +
               '</div>' +
-              '<div id="parking-status-1" class="parking-loading"><em>Checking NCH parking...</em></div>' +
+              '<div id="parking-status-' + i + '" class="parking-loading"><em>Checking NCH parking...</em></div>' +
               '</div>';
           }
 
           container.innerHTML = htmlOutput;
 
-          // Trigger parking check for Event 1
-          var firstStart = upcomingEvents[0].start.dateTime || upcomingEvents[0].start.date;
-          if (firstStart) {
-            checkParkingImpact(firstStart, 'parking-status-0');
-          }
-
-          // Trigger parking check for Event 2
-          if (upcomingEvents.length > 1) {
-            var secondStart = upcomingEvents[1].start.dateTime || upcomingEvents[1].start.date;
-            if (secondStart) {
-              checkParkingImpact(secondStart, 'parking-status-1');
+          for (var i = 0; i < upcomingEvents.length; i++) {
+            var evStart = upcomingEvents[i].start.dateTime || upcomingEvents[i].start.date;
+            if (evStart) {
+              checkParkingImpact(evStart, 'parking-status-' + i);
             }
           }
 
