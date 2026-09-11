@@ -26,7 +26,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     h2 { margin-top: 0; color: #1a73e8; }
-   .event-box {
+    .event-box {
       background: #e8f0fe;
       border-left: 4px solid #1a73e8;
       padding: 12px 16px;
@@ -63,18 +63,16 @@
     <h2>National Symphony Chorus</h2>
     <p>Add this page to your home screen to save the shortcut icon.</p>
     
-    <!-- Next Event narrative box -->
-    <div id="event-display" class="event-box">
-      <em>Loading next event...</em>
+    <!-- Target Container for JS Insertion -->
+    <div id="events-container">
+      <p style="text-align: center; color: #666;"><em>Loading upcoming events...</em></p>
     </div>
 
     <a class="btn" href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin">Open Full Calendar</a>
   </div>
 
- <!-- Wrap the JavaScript inside script tags -->
   <script>
     var API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
-    var API_KEY = 'YOUR_ACTUAL_API_KEY_HERE';
     var CALENDAR_ID = 'rtephilschedule@gmail.com';
 
     var startOfToday = new Date();
@@ -90,7 +88,6 @@
 
     var url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' + params.toString();
 
-    // Helper function to format raw Google Calendar date/time
     function formatEventDetails(event) {
       var title = event.summary || 'Untitled Event';
       var venue = event.location || 'Not Specified';
@@ -133,11 +130,12 @@
       })
       .then(function(data) {
         var container = document.getElementById('events-container');
+        if (!container) return;
+
         var currentTime = new Date();
         var upcomingEvents = [];
 
         if (data.items && data.items.length > 0) {
-          // Filter to collect up to 2 future events
           for (var i = 0; i < data.items.length; i++) {
             var item = data.items[i];
             var endTime = item.end.dateTime ? new Date(item.end.dateTime) : new Date(item.end.date + 'T23:59:59');
@@ -153,7 +151,7 @@
         if (upcomingEvents.length > 0) {
           var htmlOutput = '';
 
-          // First Event Block (Blue Line)
+          // First Event Block (Blue Accent)
           var first = formatEventDetails(upcomingEvents[0]);
           htmlOutput += '<div class="event-box">' +
             '<strong>Next Event:</strong> ' + first.title + '<br>' +
@@ -162,7 +160,7 @@
             '<strong>Venue:</strong> ' + first.venue +
             '</div>';
 
-          // Second Event Block (Slate Gray Line)
+          // Second Event Block (Slate Gray Accent)
           if (upcomingEvents.length > 1) {
             var second = formatEventDetails(upcomingEvents[1]);
             htmlOutput += '<div class="event-box-secondary">' +
@@ -180,7 +178,10 @@
       })
       .catch(function(error) {
         console.error('Error fetching calendar events:', error);
-        document.getElementById('events-container').innerHTML = '<div class="event-box">Unable to load event details (' + error.message + ').</div>';
+        var container = document.getElementById('events-container');
+        if (container) {
+          container.innerHTML = '<div class="event-box">Unable to load event details (' + error.message + ').</div>';
+        }
       });
   </script>
 </body>
