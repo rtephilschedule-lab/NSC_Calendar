@@ -152,7 +152,7 @@
 
     function checkParkingImpact(rehearsalIsoTime, targetElementId) {
       // Replace YOUR_WORKER_SUBDOMAIN with your Cloudflare subdomain name
-      var workerUrl = 'https://nch-parking-checker.YOUR_WORKER_SUBDOMAIN.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
+      var workerUrl = 'https://nch-parking-checker.rtephilschedule.workers.dev?rehearsalTime=' + encodeURIComponent(rehearsalIsoTime);
 
       fetch(workerUrl)
         .then(function(res) { return res.json(); })
