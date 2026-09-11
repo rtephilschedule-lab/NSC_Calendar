@@ -18,50 +18,57 @@
       margin: 0;
     }
     .card {
-      max-width: 450px;
+      max-width: 480px;
       margin: 40px auto;
       background: #ffffff;
       padding: 24px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    h2 { margin-top: 0; color: #1a73e8; }
-    .event-box {
-      background: #e8f0fe;
-      border-left: 4px solid #1a73e8;
-      padding: 12px 16px;
-      text-align: left;
-      margin: 20px 0 8px 0;
-      border-radius: 4px;
+    p.instruction {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: #666;
+      font-size: 14px;
     }
-
-    .event-box-secondary {
-      background: #f0f4f8;
-      border-left: 4px solid #5f6368;
-      padding: 12px 16px;
-      text-align: left;
-      margin: 20px 0 8px 0;
-      border-radius: 4px;
-    }
-    .btn {
-      display: inline-block;
-      width: 100%;
+    .top-btn {
+      display: block;
+      width: calc(100% - 32px);
+      margin: 0 auto 20px auto;
       box-sizing: border-box;
-      padding: 14px 0;
-      font-size: 16px;
+      padding: 12px 16px;
+      font-size: 15px;
+      line-height: 1.4;
       color: #ffffff;
       background-color: #1a73e8;
       border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
-      margin-top: 15px;
+      text-align: center;
+    }
+    .event-group-primary {
+      background: #f8fafc;
+      border: 2px solid #1a73e8;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .event-group-secondary {
+      background: #fdf4f0;
+      border: 2px solid #c2410c;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: left;
     }
     .parking-box-warning {
       background: #fef3c7;
       border-left: 4px solid #f59e0b;
       padding: 10px 14px;
       text-align: left;
-      margin-bottom: 15px;
+      margin-top: 12px;
+      margin-bottom: 0;
       border-radius: 4px;
       color: #92400e;
       font-size: 14px;
@@ -72,7 +79,8 @@
       border-left: 4px solid #10b981;
       padding: 10px 14px;
       text-align: left;
-      margin-bottom: 15px;
+      margin-top: 12px;
+      margin-bottom: 0;
       border-radius: 4px;
       color: #065f46;
       font-size: 14px;
@@ -82,7 +90,8 @@
       text-align: left;
       font-size: 13px;
       color: #666;
-      margin-bottom: 15px;
+      margin-top: 12px;
+      margin-bottom: 0;
       padding-left: 4px;
     }
 
@@ -101,21 +110,21 @@
 <body>
 
   <div class="card">
-    <h2>National Symphony Chorus</h2>
-    
+    <p class="instruction">Add this page to your home screen to save the shortcut icon.</p>
+
+    <a class="top-btn" href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" rel="noopener noreferrer">
+      Click here to Open the National Symphony Chorus<br>Rehearsal &amp; Performance Calendar
+    </a>
+
     <div id="events-container">
       <p style="text-align: center; color: #666;"><em>Loading upcoming events...</em></p>
     </div>
-
-    <a class="btn" href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin">Open Full Calendar</a>
   </div>
 
   <script>
     // NOTE: This API key is restricted (or should be) to:
     //    - HTTP referrer: this site's domain only
     //    - API scope: Google Calendar API (read-only) only
-    // Restrict it in Google Cloud Console > Credentials before deploying publicly.
-    // A key with no restrictions is usable by anyone who views this page's source.
     var API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
     var CALENDAR_ID = 'rtephilschedule@gmail.com';
     var VENUE_TIMEZONE = 'Europe/Dublin';
@@ -133,9 +142,6 @@
 
     var url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' + params.toString();
 
-    // Formats a Date in Europe/Dublin regardless of the viewer's own timezone,
-    // so a choir member checking this while traveling still sees the correct
-    // local time and date for the venue.
     function formatCustomDate(dateObj) {
       var parts = new Intl.DateTimeFormat('en-GB', {
         timeZone: VENUE_TIMEZONE,
@@ -167,8 +173,6 @@
           timeZone: VENUE_TIMEZONE
         });
       } else if (event.start && event.start.date) {
-        // All-day events are date-only (no time component), so they're parsed
-        // as a plain calendar date rather than run through timezone conversion.
         var startDate = new Date(event.start.date + 'T00:00:00');
         dateStr = formatCustomDate(startDate);
         timeStr = 'All Day';
@@ -245,26 +249,32 @@
         if (upcomingEvents.length > 0) {
           var htmlOutput = '';
 
-          // First Event Block
+          // First Event Group
           var first = formatEventDetails(upcomingEvents[0]);
-          htmlOutput += '<div class="event-box">' +
-            '<strong>Next Event:</strong> ' + first.title + '<br>' +
+          htmlOutput += '<div class="event-group-primary">' +
+            '<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 15px;">Next Event</div>' +
+            '<div style="line-height: 1.5;">' +
+            '<strong>Event:</strong> ' + first.title + '<br>' +
             '<strong>Date:</strong> ' + first.dateStr + '<br>' +
             '<strong>Time:</strong> ' + first.timeStr + '<br>' +
             '<strong>Venue:</strong> ' + first.venue +
             '</div>' +
-            '<div id="parking-status-0" class="parking-loading"><em>Checking NCH parking...</em></div>';
+            '<div id="parking-status-0" class="parking-loading"><em>Checking NCH parking...</em></div>' +
+            '</div>';
 
-          // Second Event Block
+          // Second Event Group
           if (upcomingEvents.length > 1) {
             var second = formatEventDetails(upcomingEvents[1]);
-            htmlOutput += '<div class="event-box-secondary">' +
-              '<strong>Following Event:</strong> ' + second.title + '<br>' +
+            htmlOutput += '<div class="event-group-secondary">' +
+              '<div style="font-weight: bold; color: #c2410c; margin-bottom: 8px; font-size: 15px;">Following Event</div>' +
+              '<div style="line-height: 1.5;">' +
+              '<strong>Event:</strong> ' + second.title + '<br>' +
               '<strong>Date:</strong> ' + second.dateStr + '<br>' +
               '<strong>Time:</strong> ' + second.timeStr + '<br>' +
               '<strong>Venue:</strong> ' + second.venue +
               '</div>' +
-              '<div id="parking-status-1" class="parking-loading"><em>Checking NCH parking...</em></div>';
+              '<div id="parking-status-1" class="parking-loading"><em>Checking NCH parking...</em></div>' +
+              '</div>';
           }
 
           container.innerHTML = htmlOutput;
@@ -284,7 +294,7 @@
           }
 
         } else {
-          container.innerHTML = '<div class="event-box">There are currently no upcoming events scheduled.</div>';
+          container.innerHTML = '<div class="event-group-primary">There are currently no upcoming events scheduled.</div>';
         }
       })
       .catch(function(error) {
