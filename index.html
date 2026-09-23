@@ -65,19 +65,20 @@
       margin-bottom: 16px;
       text-align: left;
     }
-    .doc-link-btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 8px 14px;
-      background-color: #16a34a;
-      color: #ffffff;
-      text-decoration: none;
+    .doc-iframe-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin-top: 12px;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      font-weight: bold;
-      font-size: 14px;
+      overflow: hidden;
+      background: #ffffff;
     }
-    .doc-link-btn:hover {
-      background-color: #15803d;
+    .doc-iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
     .parking-box-warning {
       background: #fef3c7;
@@ -320,7 +321,9 @@
               htmlOutput += '<div class="doc-card">' +
                 '<div style="font-weight: bold; color: #16a34a; margin-bottom: 8px; font-size: 15px;">Pre-Rehearsal Notes From Chorus Director</div>' +
                 '<div id="doc-last-updated" style="font-size: 13px; color: #666; margin-bottom: 8px;"><em>Loading last updated time...</em></div>' +
-                '<a class="doc-link-btn" href="https://docs.google.com/document/d/e/2PACX-1vQTAwC1IJ9DAQFKdsXczuv3Vlddz3TrgPEyZ4CgPno6sO30bJaNRak7KYcoXH7wHsQF0sbZqd3qjn6L/pub" target="_blank" rel="noopener noreferrer">Click here to open document</a>' +
+                '<div class="doc-iframe-container">' +
+                '<iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview"></iframe>' +
+                '</div>' +
                 '</div>';
             }
           }
