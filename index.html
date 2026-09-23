@@ -56,6 +56,28 @@
       margin-bottom: 16px;
       text-align: left;
     }
+    .doc-card {
+      background: #f0fdf4;
+      border: 2px solid #16a34a;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .doc-link-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 14px;
+      background-color: #16a34a;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .doc-link-btn:hover {
+      background-color: #15803d;
+    }
     .parking-box-warning {
       background: #fef3c7;
       border-left: 4px solid #f59e0b;
@@ -256,6 +278,15 @@
               '</div>' +
               '<div id="parking-status-' + i + '" class="parking-loading"><em>Checking NCH parking...</em></div>' +
               '</div>';
+
+            // Insert the Google Doc card right after the first event (index 0) and before the second event (index 1)
+            if (i === 0) {
+              htmlOutput += '<div class="doc-card">' +
+                '<div style="font-weight: bold; color: #16a34a; margin-bottom: 8px; font-size: 15px;">Reference Document</div>' +
+                '<div style="line-height: 1.5; margin-bottom: 8px;">Access the shared read-only schedule document for additional guidelines and notes.</div>' +
+                '<a class="doc-link-btn" href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Open Read-Only Google Doc</a>' +
+                '</div>';
+            }
           }
 
           container.innerHTML = htmlOutput;
