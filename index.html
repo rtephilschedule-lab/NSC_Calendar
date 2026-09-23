@@ -138,10 +138,11 @@
   <script>
     // NOTE: This API key is restricted (or should be) to:
     //    - HTTP referrer: this site's domain only
-    //    - API scope: Google Calendar API (read-only) only
+    //    - API scope: Google Calendar & Drive API (read-only)
     var API_KEY = 'AIzaSyANmkb0mxW4Iz9e5FSnLj89tFFxD22wyrw';
     var CALENDAR_ID = 'rtephilschedule@gmail.com';
     var VENUE_TIMEZONE = 'Europe/Dublin';
+    var GOOGLE_DOC_ID = '1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk';
 
     var startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
@@ -193,6 +194,40 @@
       }
 
       return { title: title, dateStr: dateStr, timeStr: timeStr, venue: venue };
+    }
+
+    function fetchDocMetadata() {
+      var driveUrl = 'https://www.googleapis.com/drive/v3/files/' + GOOGLE_DOC_ID + '?key=' + API_KEY + '&fields=modifiedTime';
+
+      fetch(driveUrl)
+        .then(function(res) {
+          if (!res.ok) {
+            throw new Error('Drive API status ' + res.status);
+          }
+          return res.json();
+        })
+        .then(function(data) {
+          var updateDiv = document.getElementById('doc-last-updated');
+          if (!updateDiv || !data.modifiedTime) return;
+
+          var modDate = new Date(data.modifiedTime);
+          var timeStr = modDate.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: VENUE_TIMEZONE
+          });
+          var dateStr = formatCustomDate(modDate);
+
+          updateDiv.innerHTML = 'Last Updated: ' + timeStr + ' on ' + dateStr;
+        })
+        .catch(function(err) {
+          console.error('Failed to fetch doc metadata:', err);
+          var updateDiv = document.getElementById('doc-last-updated');
+          if (updateDiv) {
+            updateDiv.innerHTML = '<em>Unable to load last updated time.</em>';
+          }
+        });
     }
 
     function checkParkingImpact(rehearsalRawStart, targetElementId) {
@@ -282,13 +317,17 @@
             // Insert the Google Doc card right after the first event (index 0) and before the second event (index 1)
             if (i === 0) {
               htmlOutput += '<div class="doc-card">' +
-                '<div style="font-weight: bold; color: #16a34a; margin-bottom: 8px; font-size: 15px;">Pre-Rehearsal Notes From Chorus Director </div>' +
+                '<div style="font-weight: bold; color: #16a34a; margin-bottom: 8px; font-size: 15px;">Pre-Rehearsal Notes From Chorus Director</div>' +
+                '<div id="doc-last-updated" style="font-size: 13px; color: #666; margin-bottom: 8px;"><em>Loading last updated time...</em></div>' +
                 '<a class="doc-link-btn" href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Click here to open document</a>' +
                 '</div>';
             }
           }
 
           container.innerHTML = htmlOutput;
+
+          // Fetch the Google Doc modification metadata after injecting HTML
+          fetchDocMetadata();
 
           for (var i = 0; i < upcomingEvents.length; i++) {
             var evStart = upcomingEvents[i].start.dateTime || upcomingEvents[i].start.date;
