@@ -176,7 +176,7 @@
   <!-- A. Title -->
   <div class="app-title">
     <div class="app-title-line1">National Symphony Chorus Ireland</div>
-    <div class="app-title-line2">Current Information for Members</div>
+    <div class="app-title-line2">Member Information Hub</div>
   </div>
 
   <!-- Top Side-by-Side Navigation Buttons -->
@@ -191,76 +191,12 @@
     </a>
   </div>
 
+  <!-- Dynamic Content Container -->
   <div id="events-container">
     <div class="card card-event-1">
       <h3>Loading Upcoming Events...</h3>
       <div class="card-inner">
         <p style="margin-top: 0;">Please wait while schedule and parking information load.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notes from Chorus Director -->
-  <div class="card card-director">
-    <h3>Notes from Chorus Director</h3>
-    <div class="card-inner">
-      <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;">Last Updated: 12:44 on Thursday, 24 Sept 2026</p>
-      <iframe class="doc-wrapper" src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview"></iframe>
-      <div style="text-align: right; margin-top: 5px;">
-        <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #1b5e20; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notes from Choir Manager -->
-  <div class="card card-manager">
-    <h3>Notes from Choir Manager</h3>
-    <div class="card-inner">
-      <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;" id="manager-timestamp">Last Updated: Loading...</p>
-      <div id="manager-content" style="font-size: 14px; margin-bottom: 12px;">
-        <em>No notes currently available.</em>
-      </div>
-      <div style="text-align: right; margin-top: 5px;">
-        <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Calendar Subscription Card -->
-  <div class="card card-subscribe">
-    <h3>Subscribe to Choir Calendar</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add the official choir schedule to your personal calendar app. Changes will sync automatically over time.</p>
-      
-      <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
-        Subscribe with Google Calendar
-      </a>
-      <button onclick="copyAndOpenInstructions(this)" class="sub-btn sub-btn-alt">
-        Copy Link for Apple / Outlook Calendar
-      </button>
-    </div>
-  </div>
-
-  <!-- Install Webpage as an App Card -->
-  <div class="card card-app-install">
-    <h3>Install Member Hub on Your Phone</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0; font-size: 14px; margin-bottom: 10px;">You can save this page directly to your home screen for quick, one-tap access:</p>
-      
-      <div style="font-size: 13px; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-        <p style="margin: 0 0 6px 0;"><strong>Android (Chrome / Samsung Internet):</strong></p>
-        <ol style="margin: 0 0 12px 20px; padding: 0;">
-          <li>Tap the menu icon (three dots in top-right).</li>
-          <li>Select <strong>Install and create shortcut</strong> (or <em>Add to Home screen</em>).</li>
-          <li>Confirm by tapping <strong>Install</strong> or <strong>Add</strong>.</li>
-        </ol>
-
-        <p style="margin: 0 0 6px 0;"><strong>iPhone / iPad (Safari):</strong></p>
-        <ol style="margin: 0 0 0 20px; padding: 0;">
-          <li>Tap the <strong>Share</strong> button at the bottom of the screen.</li>
-          <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
-          <li>Tap <strong>Add</strong> in the top-right corner.</li>
-        </ol>
       </div>
     </div>
   </div>
@@ -301,9 +237,78 @@
       const sortedDates = Array.from(dateMap.keys()).sort();
       const targetDates = sortedDates.slice(0, 4);
 
-      let containerHTML = '';
+      // Build cards according to requested order:
+      // 1. Event 1 (targetDates[0])
+      // 2. Notes from Chorus Director
+      // 3. Notes from Choir Manager
+      // 4. Events 2, 3, 4 (targetDates[1], [2], [3])
+      // 5. Subscribe Card
+      // 6. Install App Card
 
-      for (let i = 0; i < targetDates.length; i++) {
+      let fullHTML = '';
+
+      // --- 1. Event 1 ---
+      if (targetDates.length > 0) {
+        const dateKey = targetDates[0];
+        const dayEvents = dateMap.get(dateKey);
+        const theme = THEMES[0];
+
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
+        let eventsDetailsHTML = '';
+        dayEvents.forEach(ev => {
+          eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
+        });
+
+        const parkingId = `parking-${dateKey}`;
+
+        fullHTML += `
+          <div class="card ${theme.cardClass}">
+            <h3>${formattedDateTitle}</h3>
+            <div class="card-inner">
+              ${eventsDetailsHTML}
+              <div class="parking-banner" id="${parkingId}" style="border-left-color: ${theme.borderColor};">
+                Parking: Checking NCH events for this date...
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // --- 2. Notes from Chorus Director ---
+      fullHTML += `
+        <div class="card card-director">
+          <h3>Notes from Chorus Director</h3>
+          <div class="card-inner">
+            <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;">Last Updated: 12:44 on Thursday, 24 Sept 2026</p>
+            <iframe class="doc-wrapper" src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview"></iframe>
+            <div style="text-align: right; margin-top: 5px;">
+              <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #1b5e20; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // --- 3. Notes from Choir Manager ---
+      fullHTML += `
+        <div class="card card-manager">
+          <h3>Notes from Choir Manager</h3>
+          <div class="card-inner">
+            <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;" id="manager-timestamp">Last Updated: Loading...</p>
+            <div id="manager-content" style="font-size: 14px; margin-bottom: 12px;">
+              <em>No notes currently available.</em>
+            </div>
+            <div style="text-align: right; margin-top: 5px;">
+              <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // --- 4. Events 2, 3, 4 ---
+      for (let i = 1; i < targetDates.length; i++) {
         const dateKey = targetDates[i];
         const dayEvents = dateMap.get(dateKey);
         const theme = THEMES[i % THEMES.length];
@@ -319,7 +324,7 @@
 
         const parkingId = `parking-${dateKey}`;
 
-        containerHTML += `
+        fullHTML += `
           <div class="card ${theme.cardClass}">
             <h3>${formattedDateTitle}</h3>
             <div class="card-inner">
@@ -330,11 +335,62 @@
             </div>
           </div>
         `;
+      }
 
+      // --- 5. Subscribe to Choir Calendar ---
+      fullHTML += `
+        <div class="card card-subscribe">
+          <h3>Subscribe to Choir Calendar</h3>
+          <div class="card-inner">
+            <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add the official choir schedule to your personal calendar app. Changes will sync automatically over time.</p>
+            
+            <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
+              Subscribe with Google Calendar
+            </a>
+            <button onclick="copyAndOpenInstructions(this)" class="sub-btn sub-btn-alt">
+              Copy Link for Apple / Outlook Calendar
+            </button>
+          </div>
+        </div>
+      `;
+
+      // --- 6. Install Member Information Hub On Your Phone ---
+      fullHTML += `
+        <div class="card card-app-install">
+          <h3>Install Member Information Hub On Your Phone</h3>
+          <div class="card-inner">
+            <p style="margin-top: 0; font-size: 14px; margin-bottom: 10px;">You can save this page directly to your home screen for quick, one-tap access:</p>
+            
+            <div style="font-size: 13px; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+              <p style="margin: 0 0 6px 0;"><strong>Android (Chrome / Samsung Internet):</strong></p>
+              <ol style="margin: 0 0 12px 20px; padding: 0;">
+                <li>Tap the menu icon (three dots in top-right).</li>
+                <li>Select <strong>Install and create shortcut</strong> (or <em>Add to Home screen</em>).</li>
+                <li>Confirm by tapping <strong>Install</strong> or <strong>Add</strong>.</li>
+              </ol>
+
+              <p style="margin: 0 0 6px 0;"><strong>iPhone / iPad (Safari):</strong></p>
+              <ol style="margin: 0 0 0 20px; padding: 0;">
+                <li>Tap the <strong>Share</strong> button at the bottom of the screen.</li>
+                <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                <li>Tap <strong>Add</strong> in the top-right corner.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('events-container').innerHTML = fullHTML;
+
+      // Populate parking info after elements exist in DOM
+      for (let i = 0; i < targetDates.length; i++) {
+        const dateKey = targetDates[i];
+        const theme = THEMES[i % THEMES.length];
+        const parkingId = `parking-${dateKey}`;
         fetchParkingInfo(dateKey, parkingId, theme.borderColor);
       }
 
-      document.getElementById('events-container').innerHTML = containerHTML;
+      loadManagerNotes();
 
     } catch (err) {
       console.error('Error loading calendar events:', err);
@@ -381,7 +437,6 @@
       console.error('Failed to load manager notes', e);
     }
   }
-  loadManagerNotes();
 
   function openManagerPrintView() {
     const contentHTML = document.getElementById('manager-content').innerHTML;
