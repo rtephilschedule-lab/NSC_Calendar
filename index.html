@@ -46,10 +46,13 @@
     }
     .nav-btn-calendar, .nav-btn-archive {
       flex: 1;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       color: white;
       text-align: center;
-      padding: 12px;
+      padding: 10px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
@@ -62,14 +65,7 @@
     .nav-btn-archive {
       background-color: #1d5c5a;
     }
-    .btn-small {
-      display: block;
-      font-size: 11px;
-      font-weight: normal;
-      opacity: 0.95;
-    }
     .btn-large {
-      display: block;
       font-size: 15px;
       font-weight: bold;
     }
@@ -183,12 +179,12 @@
   <!-- Top Side-by-Side Navigation Buttons -->
   <div class="top-nav">
     <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" class="nav-btn-calendar">
-      <span class="btn-small">Click for</span>
-      <span class="btn-large">Choir Calendar</span>
+      <span class="btn-large">Choir</span>
+      <span class="btn-large">Calendar</span>
     </a>
     <a href="https://sites.google.com/view/nsc-new-archive/home" target="_blank" class="nav-btn-archive">
-      <span class="btn-small">Click for</span>
-      <span class="btn-large">Performances Archive</span>
+      <span class="btn-large">Performances</span>
+      <span class="btn-large">Archive</span>
     </a>
   </div>
 
@@ -263,7 +259,7 @@
             <div class="card-inner">
               ${eventsDetailsHTML}
               <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Click here to check NCH calendar for what other events may be on this day.</a>
+                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
               </div>
             </div>
           </div>
@@ -323,7 +319,7 @@
             <div class="card-inner">
               ${eventsDetailsHTML}
               <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Click here to check NCH calendar for what other events may be on this day.</a>
+                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
               </div>
             </div>
           </div>
@@ -335,7 +331,7 @@
         <div class="card card-subscribe">
           <h3>Subscribe to Choir Calendar</h3>
           <div class="card-inner">
-            <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add the official choir schedule to your personal calendar app. Changes will sync automatically over time.</p>
+            <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add online choir calendar to your personal calendar app. Changes will sync automatically over time.</p>
             
             <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
               Subscribe with Google Calendar
@@ -424,9 +420,10 @@
       <html lang="en">
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Notes from Choir Manager - Printable View</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 30px; color: #222; line-height: 1.6; max-width: 700px; margin: 0 auto; }
+          body { font-family: Arial, sans-serif; padding: 20px; color: #222; line-height: 1.6; max-width: 700px; margin: 0 auto; }
           h2 { color: #4a148c; border-bottom: 2px solid #4a148c; padding-bottom: 8px; margin-top: 0; }
           .timestamp { font-size: 13px; color: #555; margin-bottom: 20px; font-style: italic; }
           .print-btn { background: #4a148c; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 30px; }
