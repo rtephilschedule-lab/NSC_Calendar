@@ -142,6 +142,8 @@
     }
     .sub-btn {
       display: block;
+      width: 100%;
+      box-sizing: border-box;
       background-color: #455a64;
       color: white;
       text-align: center;
@@ -151,6 +153,9 @@
       font-weight: bold;
       font-size: 14px;
       margin-top: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
     }
     .sub-btn-alt {
       background-color: #607d8b;
@@ -258,13 +263,14 @@
   <!-- G. Calendar Subscription Card -->
   <div class="card card-subscribe">
     <h3>Subscribe to Choir Calendar</h3>
-    <p style="font-size: 14px; margin-bottom: 10px;">Add the official choir schedule directly to your phone or desktop calendar app so it updates automatically in real time.</p>
+    <p style="font-size: 14px; margin-bottom: 10px;">Add the official choir schedule to your personal calendar app. Changes will sync automatically over time, though updates may take up to an hour (or longer) to appear on your phone. For urgent or last-minute notices, always check this web hub.</p>
+    
     <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
       Subscribe with Google Calendar
     </a>
-    <a href="https://calendar.google.com/calendar/ical/rtephilschedule%40gmail.com/public/basic.ics" target="_blank" class="sub-btn sub-btn-alt">
-      Download iCal File (.ics) for Apple / Outlook
-    </a>
+    <button onclick="copyAndOpenInstructions(this)" class="sub-btn sub-btn-alt">
+      Copy Link for Apple / Outlook Calendar
+    </button>
   </div>
 
 </div>
@@ -291,6 +297,68 @@
     }
   }
   loadManagerNotes();
+
+  // Function to copy link and open a new page with instructions and the raw link
+  function copyAndOpenInstructions(btn) {
+    const icalUrl = "https://calendar.google.com/calendar/ical/rtephilschedule%40gmail.com/public/basic.ics";
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(icalUrl).catch(err => {
+      console.error("Clipboard write failed", err);
+    });
+
+    // Provide quick button feedback
+    const originalText = btn.innerText;
+    btn.innerText = "Link Copied! Opening Guide...";
+    setTimeout(() => {
+      btn.innerText = originalText;
+    }, 3000);
+
+    // Open instructions page in a new tab using a data URL containing a complete standalone HTML page
+    const instructionsHTML = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Apple & Outlook Calendar Setup Guide</title>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f8f9fa; color: #333; padding: 20px; line-height: 1.6; }
+          .box { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-top: 4px solid #607d8b; }
+          h2 { color: #455a64; margin-top: 0; }
+          input { width: 100%; padding: 10px; font-size: 13px; box-sizing: border-box; background: #f1f3f4; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; font-family: monospace; }
+          ul { padding-left: 20px; }
+          li { margin-bottom: 10px; }
+          .note { background: #fdf2f2; border-left: 4px solid #d9534f; padding: 10px; font-size: 13px; margin-top: 20px; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <h2>Apple & Outlook Calendar Setup</h2>
+          <p>The subscription link has been copied to your clipboard. If you need to copy it manually again, use the box below:</p>
+          
+          <label for="urlbox"><strong>Calendar iCal Link:</strong></label>
+          <input type="text" id="urlbox" value="${icalUrl}" readonly onclick="this.select();">
+
+          <h3>Step-by-Step Instructions:</h3>
+          <ul>
+            <li><strong>iPhone / iPad (Apple Calendar):</strong> Open device <em>Settings &gt; Calendar &gt; Accounts &gt; Add Account &gt; Other &gt; Add Subscribed Calendar</em>, then paste the link into the Server field and save.</li>
+            <li><strong>Mac (Apple Calendar):</strong> Open Calendar, click <em>File &gt; New Calendar Subscription</em>, paste the link, click Subscribe, and choose your preferred update frequency.</li>
+            <li><strong>Outlook (Desktop / Web):</strong> Open Outlook Calendar, click <em>Add calendar &gt; Subscribe from web</em>, paste the link, name the calendar, and save.</li>
+          </ul>
+
+          <div class="note">
+            <strong>Note:</strong> Calendar apps check for updates periodically (usually taking up to an hour or more to show changes). For urgent or last-minute updates, always check the main <a href="https://rtephilschedule-lab.github.io/NSC_Calendar/" target="_blank">National Symphony Chorus Member Hub</a>.
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([instructionsHTML], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+  }
 </script>
 
 </body>
