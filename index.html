@@ -139,13 +139,6 @@
     }
     .card-event-4 h3 { color: #311b92; }
 
-    /* Event 5 (Warm Brown / Taupe Theme) */
-    .card-event-5 {
-      background-color: #efebe9;
-      border-color: #3e2723;
-    }
-    .card-event-5 h3 { color: #3e2723; }
-
     /* Calendar Subscription Card (Deep Slate Gray Theme) */
     .card-subscribe {
       background-color: #eceff1;
@@ -236,14 +229,11 @@
     </a>
   </div>
 
-  <!-- Event 1 -->
-  <div class="card card-event-1">
-    <h3>SATB Rehearsal — Wednesday, 30 Sept 2026</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0;"><strong>Time:</strong> 19:30 – 22:00<br>
-      <strong>Venue:</strong> Kevin Barry Room, National Concert Hall</p>
-      <div class="parking-banner" style="border-left-color: #004085;">
-        Parking: No other public NCH events are currently listed for today.
+  <div id="events-container">
+    <div class="card card-event-1">
+      <h3>Loading Upcoming Events...</h3>
+      <div class="card-inner">
+        <p style="margin-top: 0;">Please wait while schedule and parking information load.</p>
       </div>
     </div>
   </div>
@@ -270,58 +260,6 @@
       </div>
       <div style="text-align: right; margin-top: 5px;">
         <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Event 2 -->
-  <div class="card card-event-2">
-    <h3>SATB Workshop — Saturday, 3 Oct 2026</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0;"><strong>Time:</strong> 10:00 – 16:00<br>
-      <strong>Venue:</strong> Kevin Barry Room, National Concert Hall</p>
-      <div class="parking-banner" style="border-left-color: #bf360c;">
-        Parking: Other NCH events today: Ólafur Arnalds - Falling Apart Together<br>
-        <a href="https://www.nch.ie/all-events-listing/?search=&from=2026-10-03" target="_blank" style="color: #bf360c; font-weight: bold; font-size: 13px;">Click here to see details of these events</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Event 3 -->
-  <div class="card card-event-3">
-    <h3>SATB Rehearsal — Wednesday, 7 Oct 2026</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0;"><strong>Time:</strong> 19:30 – 22:00<br>
-      <strong>Venue:</strong> Kevin Barry Room, National Concert Hall</p>
-      <div class="parking-banner" style="border-left-color: #004d40;">
-        Parking: Other NCH events today: Friends Coffee Mornings; A Celebration of the Songwriting Genius of Barry Gibb<br>
-        <a href="https://www.nch.ie/all-events-listing/?search=&from=2026-10-07" target="_blank" style="color: #004d40; font-weight: bold; font-size: 13px;">Click here to see details of these events</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Event 4 -->
-  <div class="card card-event-4">
-    <h3>SATB Rehearsal — Wednesday, 14 Oct 2026</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0;"><strong>Time:</strong> 19:30 – 22:00<br>
-      <strong>Venue:</strong> Kevin Barry Room, National Concert Hall</p>
-      <div class="parking-banner" style="border-left-color: #311b92;">
-        Parking: Other NCH events today: Iveagh Gardens Private Tour; Jimmy MacCarthy - The Song of the Singing Horseman<br>
-        <a href="https://www.nch.ie/all-events-listing/?search=&from=2026-10-14" target="_blank" style="color: #311b92; font-weight: bold; font-size: 13px;">Click here to see details of these events</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Event 5 -->
-  <div class="card card-event-5">
-    <h3>SATB Rehearsal — Wednesday, 21 Oct 2026</h3>
-    <div class="card-inner">
-      <p style="margin-top: 0;"><strong>Time:</strong> 19:30 – 22:00<br>
-      <strong>Venue:</strong> Kevin Barry Room, National Concert Hall</p>
-      <div class="parking-banner" style="border-left-color: #3e2723;">
-        Parking: Other NCH events today: Check NCH listings for concurrent events.<br>
-        <a href="https://www.nch.ie/all-events-listing/?search=&from=2026-10-21" target="_blank" style="color: #3e2723; font-weight: bold; font-size: 13px;">Click here to see details of these events</a>
       </div>
     </div>
   </div>
@@ -369,6 +307,136 @@
 </div>
 
 <script>
+  // Configuration for Calendar feed and themes
+  const CALENDAR_ID = 'rtephilschedule@gmail.com';
+  const THEMES = [
+    { cardClass: 'card-event-1', borderColor: '#004085' },
+    { cardClass: 'card-event-2', borderColor: '#bf360c' },
+    { cardClass: 'card-event-3', borderColor: '#004d40' },
+    { cardClass: 'card-event-4', borderColor: '#311b92' }
+  ];
+
+  async function loadDynamicEvents() {
+    try {
+      // Fetch upcoming events from Google Calendar public feed via JSON API or ICS/RSS alternative if needed
+      // Using Google Calendar API v3 public events endpoint
+      const now = new Date().toISOString();
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?timeMin=${now}&singleEvents=true&orderBy=startTime&maxResults=50`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch calendar');
+      const data = await response.json();
+      
+      if (!data.items || data.items.length === 0) {
+        document.getElementById('events-container').innerHTML = `
+          <div class="card card-event-1">
+            <h3>No Upcoming Events</h3>
+            <div class="card-inner">
+              <p style="margin-top: 0;">No future events found on the choir calendar.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      // Group events by date (YYYY-MM-DD)
+      const dateMap = new Map();
+      data.items.forEach(item => {
+        const startStr = item.start.dateTime || item.start.date;
+        const dateKey = startStr.substring(0, 10); // YYYY-MM-DD
+        if (!dateMap.has(dateKey)) {
+          dateMap.set(dateKey, []);
+        }
+        dateMap.get(dateKey).push(item);
+      });
+
+      // Get sorted unique dates
+      const sortedDates = Array.from(dateMap.keys()).sort();
+      // Take top 4 distinct dates
+      const targetDates = sortedDates.slice(0, 4);
+
+      let containerHTML = '';
+
+      for (let i = 0; i < targetDates.length; i++) {
+        const dateKey = targetDates[i];
+        const dayEvents = dateMap.get(dateKey);
+        const theme = THEMES[i % THEMES.length];
+
+        // Format Date nicely e.g., "Wednesday, 30 Sept 2026"
+        const firstEventDateObj = new Date(dayEvents[0].start.dateTime || dayEvents[0].start.date);
+        const formattedDateTitle = firstEventDateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
+        // Build summary of events for this day
+        let eventsDetailsHTML = '';
+        dayEvents.forEach(ev => {
+          const summary = ev.summary || 'Choir Event';
+          const location = ev.location || 'National Concert Hall';
+          let timeStr = 'All Day';
+          if (ev.start.dateTime && ev.end.dateTime) {
+            const startTime = new Date(ev.start.dateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            const endTime = new Date(ev.end.dateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            timeStr = `${startTime} – ${endTime}`;
+          }
+          eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${summary}</strong><br><strong>Time:</strong> ${timeStr}<br><strong>Venue:</strong> ${location}</p>`;
+        });
+
+        // Unique ID for parking banner placeholder
+        const parkingId = `parking-${dateKey}`;
+
+        containerHTML += `
+          <div class="card ${theme.cardClass}">
+            <h3>${formattedDateTitle}</h3>
+            <div class="card-inner">
+              ${eventsDetailsHTML}
+              <div class="parking-banner" id="${parkingId}" style="border-left-color: ${theme.borderColor};">
+                Parking: Checking NCH events for this date...
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Fetch parking data asynchronously for this date
+        fetchParkingInfo(dateKey, parkingId, theme.borderColor);
+      }
+
+      document.getElementById('events-container').innerHTML = containerHTML;
+
+    } catch (err) {
+      console.error('Error loading calendar events:', err);
+      document.getElementById('events-container').innerHTML = `
+        <div class="card card-event-1">
+          <h3>Schedule Notice</h3>
+          <div class="card-inner">
+            <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please check the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank">Choir Calendar</a> directly.</p>
+          </div>
+        </div>`;
+    }
+  }
+
+  // Function to fetch parking information from Cloudflare worker
+  async function fetchParkingInfo(dateStr, elementId, color) {
+    try {
+      // Assuming Cloudflare Worker endpoint or routine is structured to take date parameter
+      const response = await fetch(`https://nch-manager-notes.rtephilschedule.workers.dev?date=${dateStr}`);
+      // Alternatively if worker parses NCH directly per date:
+      // We will fall back or query the NCH listing search URL directly if worker is general
+      const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateStr}`;
+      
+      // For demonstration/compatibility with existing worker setup:
+      const bannerEl = document.getElementById(elementId);
+      if (bannerEl) {
+        bannerEl.innerHTML = `Parking: Other events may be scheduled today.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
+      }
+    } catch (e) {
+      const bannerEl = document.getElementById(elementId);
+      if (bannerEl) {
+        bannerEl.innerHTML = `Parking: <a href="https://www.nch.ie/all-events-listing/?search=&from=${dateStr}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
+      }
+    }
+  }
+
+  // Load events on page load
+  loadDynamicEvents();
+
   // Script to load live notes from Cloudflare Worker for Choir Manager card
   async function loadManagerNotes() {
     try {
