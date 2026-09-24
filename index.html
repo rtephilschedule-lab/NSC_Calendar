@@ -165,14 +165,19 @@
       background-color: #546e7a;
     }
 
-    /* Embedded Google Doc wrapper */
+    /* Embedded Google Doc wrapper with responsive height */
     .doc-wrapper {
       width: 100%;
-      height: 450px;
+      height: 380px;
       border: 1px solid #ccc;
       background: #fff;
       margin-top: 8px;
       margin-bottom: 8px;
+    }
+    @media (min-width: 768px) {
+      .doc-wrapper {
+        height: 480px;
+      }
     }
 
     .parking-banner {
@@ -239,7 +244,10 @@
   <div class="card card-manager">
     <h3>Notes from Choir Manager</h3>
     <div class="card-inner">
-      <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;" id="manager-timestamp">Last Updated: Loading...</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px;">
+        <p style="font-size: 12px; color: #555; margin: 0;" id="manager-timestamp">Last Updated: Loading...</p>
+        <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
+      </div>
       <div id="manager-content" style="font-size: 14px;">
         <em>No notes currently available.</em>
       </div>
@@ -340,6 +348,39 @@
     }
   }
   loadManagerNotes();
+
+  // Function to open Choir Manager notes in a clean printable window
+  function openManagerPrintView() {
+    const contentHTML = document.getElementById('manager-content').innerHTML;
+    const timestampText = document.getElementById('manager-timestamp').innerText;
+
+    const printPageHTML = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>Notes from Choir Manager - Printable View</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 30px; color: #222; line-height: 1.6; max-width: 700px; margin: 0 auto; }
+          h2 { color: #4a148c; border-bottom: 2px solid #4a148c; padding-bottom: 8px; margin-top: 0; }
+          .timestamp { font-size: 13px; color: #555; margin-bottom: 20px; font-style: italic; }
+          .print-btn { background: #4a148c; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 30px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <button class="print-btn" onclick="window.print()">Print This Page</button>
+        <h2>Notes from Choir Manager</h2>
+        <div class="timestamp">${timestampText}</div>
+        <div>${contentHTML}</div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([printPageHTML], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+  }
 
   // Function to copy link and open a new page with instructions and the raw link
   function copyAndOpenInstructions(btn) {
