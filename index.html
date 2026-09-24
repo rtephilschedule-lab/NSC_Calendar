@@ -73,7 +73,7 @@
       font-weight: bold;
     }
 
-    /* Card Framework: Outer Colored Frame with White Inner Container */
+    /* Card Framework */
     .card {
       border-radius: 10px;
       padding: 15px;
@@ -192,7 +192,7 @@
   </div>
 
   <div id="events-container">
-    <div class="card card-event-1">
+    <div class="card card-event-1" id="loading-card">
       <h3>Loading Upcoming Events...</h3>
       <div class="card-inner">
         <p style="margin-top: 0;">Please wait while schedule and parking information load.</p>
@@ -278,76 +278,25 @@
 
   async function loadDynamicEvents() {
     try {
-      // Using Google Calendar's public JSON endpoint which bypasses CORS issues
-      const jsonUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(CALENDAR_ID)}&ctz=Europe%2FDublin`;
+      const icsUrl = `https://calendar.google.com/calendar/ical/${encodeURIComponent(CALENDAR_ID)}/public/basic.ics`;
+      const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(icsUrl);
       
-      // Since direct fetch of HTML embed can be tricky to parse without a backend, 
-      // let's use the public ICS via a reliable direct script approach or fallback to the calendar link if needed.
-      // Alternatively, we can query public events via JSONP / Google Calendar API public feed:
-      const apiUrl = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?singleEvents=true&orderBy=startTime&timeMin=${new Date().toISOString()}&key=YOUR_API_KEY`;
-      
-      // Since user doesn't have an API key, we use the public iframe fallback or ICS parser via a direct reliable parser.
-      // Let's use a robust fallback that directly embeds a clean widget or parses via standard public XML/RSS if available.
-      // Actually, Google Calendar provides an XML/Atom feed which can be fetched easily via CORS or alternative public endpoints:
-      const atomUrl = `https://calendar.google.com/calendar/atom/${encodeURIComponent(CALENDAR_ID)}`;
-      const proxyUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(atomUrl);
-
       const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Failed to fetch calendar atom feed');
-      const data = await response.json();
-      
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-      const entries = xmlDoc.getElementsByTagName("entry");
+      if (!response.ok) throw new Error('Network response was not ok');
+      const icsText = await response.text();
 
-      const events = [];
+      const events = parseICalendar(icsText);
       const todayStr = getLocalDateString(new Date());
+      const futureEvents = events.filter(ev => ev.endDateStr >= todayStr);
 
-      for (let i = 0; i < entries.length; i++) {
-        const entry = entries[i];
-        const title = entry.getElementsByTagName("title")[0]?.textContent || 'Choir Event';
-        const content = entry.getElementsByTagName("content")[0]?.textContent || '';
-        const startTimeAttr = entry.getElementsByTagName("gd:when")[0]?.getAttribute("startTime");
-
-        if (startTimeAttr) {
-          const startDateStr = startTimeAttr.substring(0, 10);
-          if (startDateStr >= todayStr) {
-            let timeStr = 'All Day';
-            if (startTimeAttr.includes('T')) {
-              const timePart = startTimeAttr.substring(11, 16);
-              // Format time to 12-hour or nice 24-hour
-              const [hh, mm] = timePart.split(':');
-              const hourNum = parseInt(hh, 10);
-              const ampm = hourNum >= 12 ? 'pm' : 'am';
-              const formattedHour = hourNum % 12 || 12;
-              timeStr = `${formattedHour}:${mm} ${ampm}`;
-            }
-
-            // Extract location from content if present
-            let location = 'National Concert Hall';
-            if (content.includes('Where:')) {
-              const match = content.match(/Where:\s*([^<]+)/);
-              if (match) location = match[1].trim();
-            }
-
-            events.push({
-              startDateStr: startDateStr,
-              summary: title,
-              location: location,
-              timeStr: timeStr
-            });
-          }
-        }
-      }
-
-      if (events.length === 0) {
-        showFallbackCalendarNotice();
+      if (futureEvents.length === 0) {
+        showFallbackNotice();
         return;
       }
 
       // Group by date
       const dateMap = new Map();
-      events.forEach(ev => {
+      futureEvents.forEach(ev => {
         if (!dateMap.has(ev.startDateStr)) {
           dateMap.set(ev.startDateStr, []);
         }
@@ -393,19 +342,100 @@
       document.getElementById('events-container').innerHTML = containerHTML;
 
     } catch (err) {
-      console.error('Error loading atom feed, trying fallback:', err);
-      showFallbackCalendarNotice();
+      console.error('Error loading ICS feed:', err);
+      showFallbackNotice();
     }
   }
 
-  function showFallbackCalendarNotice() {
+  function showFallbackNotice() {
     document.getElementById('events-container').innerHTML = `
       <div class="card card-event-1">
         <h3>Schedule Notice</h3>
         <div class="card-inner">
-          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please check the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #004085; font-weight: bold;">Choir Calendar</a> directly.</p>
+          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #004085; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
       </div>`;
+  }
+
+  function parseICalendar(icsText) {
+    const events = [];
+    const lines = icsText.split(/\r?\n/);
+    let currentEvent = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      while (i + 1 < lines.length && (lines[i+1].startsWith(' ') || lines[i+1].startsWith('\t'))) {
+        i++;
+        line += lines[i].substring(1);
+      }
+
+      if (line === 'BEGIN:VEVENT') {
+        currentEvent = {};
+      } else if (line === 'END:VEVENT' && currentEvent) {
+        if (currentEvent.start && currentEvent.summary) {
+          events.push(formatEventData(currentEvent));
+        }
+        currentEvent = null;
+      } else if (currentEvent) {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx !== -1) {
+          const key = line.substring(0, colonIdx);
+          const val = line.substring(colonIdx + 1);
+          if (key.startsWith('DTSTART')) currentEvent.start = val;
+          if (key.startsWith('DTEND')) currentEvent.end = val;
+          if (key === 'SUMMARY') currentEvent.summary = val.replace(/\\,/g, ',').replace(/\\;/g, ';');
+          if (key === 'LOCATION') currentEvent.location = val.replace(/\\,/g, ',').replace(/\\;/g, ';');
+        }
+      }
+    }
+    return events;
+  }
+
+  function formatEventData(raw) {
+    let startDateStr, timeStr;
+    const startVal = raw.start;
+    
+    if (startVal.length === 8) {
+      const y = startVal.substring(0, 4);
+      const m = startVal.substring(4, 6);
+      const d = startVal.substring(6, 8);
+      startDateStr = `${y}-${m}-${d}`;
+      timeStr = 'All Day';
+    } else {
+      const y = startVal.substring(0, 4);
+      const m = startVal.substring(4, 6);
+      const d = startVal.substring(6, 8);
+      startDateStr = `${y}-${m}-${d}`;
+      
+      if (startVal.includes('T')) {
+        const thh = startVal.substring(9, 11);
+        const tmm = startVal.substring(11, 13);
+        const dateObj = new Date(`${y}-${m}-${thh}:${tmm}:00Z`);
+        const startTimeFormatted = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
+        
+        let endTimeFormatted = '';
+        if (raw.end && raw.end.includes('T')) {
+          const ey = raw.end.substring(0, 4);
+          const em = raw.end.substring(4, 6);
+          const ed = raw.end.substring(6, 8);
+          const ehh = raw.end.substring(9, 11);
+          const emm = raw.end.substring(11, 13);
+          const endDateObj = new Date(`${ey}-${em}-${ehh}:${emm}:00Z`);
+          endTimeFormatted = ' – ' + endDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
+        }
+        timeStr = `${startTimeFormatted}${endTimeFormatted}`;
+      } else {
+        timeStr = 'All Day';
+      }
+    }
+
+    return {
+      startDateStr: startDateStr,
+      endDateStr: startDateStr,
+      summary: raw.summary || 'Choir Event',
+      location: raw.location || 'National Concert Hall',
+      timeStr: timeStr
+    };
   }
 
   function getLocalDateString(d) {
