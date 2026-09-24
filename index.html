@@ -32,7 +32,8 @@
     }
     .app-title-line2 {
       font-style: italic;
-      font-size: 16px;
+      font-weight: bold;
+      font-size: 18px;
       color: #555;
       margin-top: 5px;
     }
@@ -247,22 +248,22 @@
 
         const [year, month, day] = dateKey.split('-').map(Number);
         const dateObj = new Date(year, month - 1, day);
-        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
         let eventsDetailsHTML = '';
         dayEvents.forEach(ev => {
           eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
         });
 
-        const parkingId = `parking-${dateKey}`;
+        const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
 
         fullHTML += `
           <div class="card ${theme.cardClass}">
             <h3>${formattedDateTitle}</h3>
             <div class="card-inner">
               ${eventsDetailsHTML}
-              <div class="parking-banner" id="${parkingId}" style="border-left-color: ${theme.borderColor};">
-                Parking: Checking NCH events for this date...
+              <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
+                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Click here to check NCH calendar for what other events may be on this day.</a>
               </div>
             </div>
           </div>
@@ -307,22 +308,22 @@
 
         const [year, month, day] = dateKey.split('-').map(Number);
         const dateObj = new Date(year, month - 1, day);
-        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
         let eventsDetailsHTML = '';
         dayEvents.forEach(ev => {
           eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
         });
 
-        const parkingId = `parking-${dateKey}`;
+        const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
 
         fullHTML += `
           <div class="card ${theme.cardClass}">
             <h3>${formattedDateTitle}</h3>
             <div class="card-inner">
               ${eventsDetailsHTML}
-              <div class="parking-banner" id="${parkingId}" style="border-left-color: ${theme.borderColor};">
-                Parking: Checking NCH events for this date...
+              <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
+                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Click here to check NCH calendar for what other events may be on this day.</a>
               </div>
             </div>
           </div>
@@ -374,14 +375,6 @@
 
       document.getElementById('events-container').innerHTML = fullHTML;
 
-      // Populate parking info after elements exist in DOM
-      for (let i = 0; i < targetDates.length; i++) {
-        const dateKey = targetDates[i];
-        const theme = THEMES[i % THEMES.length];
-        const parkingId = `parking-${dateKey}`;
-        fetchParkingInfo(dateKey, parkingId, theme.borderColor);
-      }
-
       loadManagerNotes();
 
     } catch (err) {
@@ -398,53 +391,6 @@
           <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #004085; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
       </div>`;
-  }
-
-  async function fetchParkingInfo(dateStr, elementId, color) {
-    const bannerEl = document.getElementById(elementId);
-    if (!bannerEl) return;
-
-    const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateStr}`;
-    
-    try {
-      // Using a CORS proxy to fetch NCH listings and check for other events on that date
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(nchUrl)}`;
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error('Network response was not ok');
-      
-      const data = await res.json();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, 'text/html');
-      
-      // Select event items from NCH listing page (adjust selector if NCH layout changes)
-      const eventCards = doc.querySelectorAll('.event-item, .search-result-item, article');
-      
-      if (eventCards && eventCards.length > 0) {
-        let eventTitles = [];
-        eventCards.forEach(card => {
-          const titleEl = card.querySelector('h2, h3, .title');
-          if (titleEl) {
-            const titleText = titleEl.textContent.trim();
-            // Filter out rehearsal/chorus entries if needed, or list them
-            if (titleText && !eventTitles.includes(titleText)) {
-              eventTitles.push(titleText);
-            }
-          }
-        });
-
-        if (eventTitles.length > 0) {
-          bannerEl.innerHTML = `Parking: Other events scheduled today include: <strong>${eventTitles.slice(0, 3).join(', ')}</strong>.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check full NCH listings for this date</a>`;
-          return;
-        }
-      }
-      
-      // Fallback if parsing didn't find specific titles
-      bannerEl.innerHTML = `Parking: Check NCH schedule for other events today.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
-
-    } catch (e) {
-      // Fallback on network/CORS error
-      bannerEl.innerHTML = `Parking: Other events may be scheduled today.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
-    }
   }
 
   loadDynamicEvents();
