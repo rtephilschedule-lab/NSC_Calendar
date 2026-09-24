@@ -237,14 +237,6 @@
       const sortedDates = Array.from(dateMap.keys()).sort();
       const targetDates = sortedDates.slice(0, 4);
 
-      // Build cards according to requested order:
-      // 1. Event 1 (targetDates[0])
-      // 2. Notes from Chorus Director
-      // 3. Notes from Choir Manager
-      // 4. Events 2, 3, 4 (targetDates[1], [2], [3])
-      // 5. Subscribe Card
-      // 6. Install App Card
-
       let fullHTML = '';
 
       // --- 1. Event 1 ---
@@ -408,10 +400,49 @@
       </div>`;
   }
 
-  function fetchParkingInfo(dateStr, elementId, color) {
-    const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateStr}`;
+  async function fetchParkingInfo(dateStr, elementId, color) {
     const bannerEl = document.getElementById(elementId);
-    if (bannerEl) {
+    if (!bannerEl) return;
+
+    const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateStr}`;
+    
+    try {
+      // Using a CORS proxy to fetch NCH listings and check for other events on that date
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(nchUrl)}`;
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error('Network response was not ok');
+      
+      const data = await res.json();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data.contents, 'text/html');
+      
+      // Select event items from NCH listing page (adjust selector if NCH layout changes)
+      const eventCards = doc.querySelectorAll('.event-item, .search-result-item, article');
+      
+      if (eventCards && eventCards.length > 0) {
+        let eventTitles = [];
+        eventCards.forEach(card => {
+          const titleEl = card.querySelector('h2, h3, .title');
+          if (titleEl) {
+            const titleText = titleEl.textContent.trim();
+            // Filter out rehearsal/chorus entries if needed, or list them
+            if (titleText && !eventTitles.includes(titleText)) {
+              eventTitles.push(titleText);
+            }
+          }
+        });
+
+        if (eventTitles.length > 0) {
+          bannerEl.innerHTML = `Parking: Other events scheduled today include: <strong>${eventTitles.slice(0, 3).join(', ')}</strong>.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check full NCH listings for this date</a>`;
+          return;
+        }
+      }
+      
+      // Fallback if parsing didn't find specific titles
+      bannerEl.innerHTML = `Parking: Check NCH schedule for other events today.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
+
+    } catch (e) {
+      // Fallback on network/CORS error
       bannerEl.innerHTML = `Parking: Other events may be scheduled today.<br><a href="${nchUrl}" target="_blank" style="color: ${color}; font-weight: bold; font-size: 13px;">Click here to check NCH event listings for this date</a>`;
     }
   }
