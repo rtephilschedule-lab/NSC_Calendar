@@ -192,7 +192,7 @@
   </div>
 
   <div id="events-container">
-    <div class="card card-event-1" id="loading-card">
+    <div class="card card-event-1">
       <h3>Loading Upcoming Events...</h3>
       <div class="card-inner">
         <p style="margin-top: 0;">Please wait while schedule and parking information load.</p>
@@ -268,7 +268,8 @@
 </div>
 
 <script>
-  const CALENDAR_ID = 'rtephilschedule@gmail.com';
+  const WORKER_URL = 'https://nsc-calendar-proxy.rtephilschedule.workers.dev';
+  
   const THEMES = [
     { cardClass: 'card-event-1', borderColor: '#004085' },
     { cardClass: 'card-event-2', borderColor: '#bf360c' },
@@ -278,18 +279,12 @@
 
   async function loadDynamicEvents() {
     try {
-      const icsUrl = `https://calendar.google.com/calendar/ical/${encodeURIComponent(CALENDAR_ID)}/public/basic.ics`;
-      const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(icsUrl);
+      const response = await fetch(WORKER_URL);
+      if (!response.ok) throw new Error('Failed to fetch calendar from worker');
       
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const icsText = await response.text();
+      const futureEvents = await response.json();
 
-      const events = parseICalendar(icsText);
-      const todayStr = getLocalDateString(new Date());
-      const futureEvents = events.filter(ev => ev.endDateStr >= todayStr);
-
-      if (futureEvents.length === 0) {
+      if (!Array.isArray(futureEvents) || futureEvents.length === 0) {
         showFallbackNotice();
         return;
       }
@@ -342,7 +337,7 @@
       document.getElementById('events-container').innerHTML = containerHTML;
 
     } catch (err) {
-      console.error('Error loading ICS feed:', err);
+      console.error('Error loading calendar events:', err);
       showFallbackNotice();
     }
   }
@@ -355,94 +350,6 @@
           <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #004085; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
       </div>`;
-  }
-
-  function parseICalendar(icsText) {
-    const events = [];
-    const lines = icsText.split(/\r?\n/);
-    let currentEvent = null;
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-      while (i + 1 < lines.length && (lines[i+1].startsWith(' ') || lines[i+1].startsWith('\t'))) {
-        i++;
-        line += lines[i].substring(1);
-      }
-
-      if (line === 'BEGIN:VEVENT') {
-        currentEvent = {};
-      } else if (line === 'END:VEVENT' && currentEvent) {
-        if (currentEvent.start && currentEvent.summary) {
-          events.push(formatEventData(currentEvent));
-        }
-        currentEvent = null;
-      } else if (currentEvent) {
-        const colonIdx = line.indexOf(':');
-        if (colonIdx !== -1) {
-          const key = line.substring(0, colonIdx);
-          const val = line.substring(colonIdx + 1);
-          if (key.startsWith('DTSTART')) currentEvent.start = val;
-          if (key.startsWith('DTEND')) currentEvent.end = val;
-          if (key === 'SUMMARY') currentEvent.summary = val.replace(/\\,/g, ',').replace(/\\;/g, ';');
-          if (key === 'LOCATION') currentEvent.location = val.replace(/\\,/g, ',').replace(/\\;/g, ';');
-        }
-      }
-    }
-    return events;
-  }
-
-  function formatEventData(raw) {
-    let startDateStr, timeStr;
-    const startVal = raw.start;
-    
-    if (startVal.length === 8) {
-      const y = startVal.substring(0, 4);
-      const m = startVal.substring(4, 6);
-      const d = startVal.substring(6, 8);
-      startDateStr = `${y}-${m}-${d}`;
-      timeStr = 'All Day';
-    } else {
-      const y = startVal.substring(0, 4);
-      const m = startVal.substring(4, 6);
-      const d = startVal.substring(6, 8);
-      startDateStr = `${y}-${m}-${d}`;
-      
-      if (startVal.includes('T')) {
-        const thh = startVal.substring(9, 11);
-        const tmm = startVal.substring(11, 13);
-        const dateObj = new Date(`${y}-${m}-${thh}:${tmm}:00Z`);
-        const startTimeFormatted = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
-        
-        let endTimeFormatted = '';
-        if (raw.end && raw.end.includes('T')) {
-          const ey = raw.end.substring(0, 4);
-          const em = raw.end.substring(4, 6);
-          const ed = raw.end.substring(6, 8);
-          const ehh = raw.end.substring(9, 11);
-          const emm = raw.end.substring(11, 13);
-          const endDateObj = new Date(`${ey}-${em}-${ehh}:${emm}:00Z`);
-          endTimeFormatted = ' – ' + endDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
-        }
-        timeStr = `${startTimeFormatted}${endTimeFormatted}`;
-      } else {
-        timeStr = 'All Day';
-      }
-    }
-
-    return {
-      startDateStr: startDateStr,
-      endDateStr: startDateStr,
-      summary: raw.summary || 'Choir Event',
-      location: raw.location || 'National Concert Hall',
-      timeStr: timeStr
-    };
-  }
-
-  function getLocalDateString(d) {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 
   function fetchParkingInfo(dateStr, elementId, color) {
