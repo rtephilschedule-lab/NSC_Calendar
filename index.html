@@ -18,19 +18,19 @@
       margin: 0 auto;
     }
     
-    /* A. Title & Subtitle (Updated with official branding colors) */
+    /* Title & Subtitle (Title increased by ~20% using official branding colors) */
     .app-title {
       text-align: center;
       margin-bottom: 20px;
-      line-height: 1.3;
+      line-height: 1.2;
     }
     .app-title-line1 {
       font-variant: small-caps;
       font-weight: bold;
-      font-size: 26px;
+      font-size: 32px;
       background-color: #e68a2e;
       color: #000000;
-      padding: 12px 10px;
+      padding: 14px 10px;
       border-radius: 8px 8px 0 0;
       letter-spacing: 0.5px;
     }
@@ -44,38 +44,6 @@
       border-radius: 0 0 8px 8px;
       border: 1px solid #e0e0e0;
       border-top: none;
-    }
-
-    /* Top Navigation Buttons */
-    .top-nav {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .nav-btn-calendar, .nav-btn-archive {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      line-height: 1.2;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .nav-btn-calendar {
-      background-color: #004085;
-    }
-    .nav-btn-archive {
-      background-color: #1d5c5a;
-    }
-    .btn-large {
-      font-size: 15px;
-      font-weight: bold;
     }
 
     /* Card Framework */
@@ -99,32 +67,58 @@
       border: 1px solid #e0e0e0;
     }
 
-    /* Event Themes */
-    .card-event-1 { background-color: #e6f0fa; border-color: #004085; }
-    .card-event-1 h3 { color: #004085; }
+    /* Hierarchy-Based Theming */
+    .card-event-1 { background-color: #eef4fc; border-color: #003366; }
+    .card-event-1 h3 { color: #003366; }
 
-    .card-director { background-color: #e8f5e9; border-color: #1b5e20; }
+    .card-director { background-color: #f1f8f2; border-color: #1b5e20; }
     .card-director h3 { color: #1b5e20; }
 
-    .card-manager { background-color: #f3e5f5; border-color: #4a148c; }
+    .card-manager { background-color: #f7f2fb; border-color: #4a148c; }
     .card-manager h3 { color: #4a148c; }
 
-    .card-event-2 { background-color: #fbe9e7; border-color: #bf360c; }
-    .card-event-2 h3 { color: #bf360c; }
+    .card-event-secondary { background-color: #f8f9fa; border-color: #78909c; }
+    .card-event-secondary h3 { color: #455a64; }
 
-    .card-event-3 { background-color: #e0f2f1; border-color: #004d40; }
-    .card-event-3 h3 { color: #004d40; }
-
-    .card-event-4 { background-color: #ede7f6; border-color: #311b92; }
-    .card-event-4 h3 { color: #311b92; }
-
-    .card-subscribe { background-color: #e6f0fa; border-color: #004085; }
-    .card-subscribe h3 { color: #004085; }
+    .card-subscribe { background-color: #eef4fc; border-color: #003366; }
+    .card-subscribe h3 { color: #003366; }
 
     .card-app-install { background-color: #e8f5f4; border-color: #1d5c5a; }
     .card-app-install h3 { color: #1d5c5a; }
 
-    /* Bottom Toggle Navigation Buttons */
+    /* Top External Navigation Buttons */
+    .top-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .nav-btn-calendar, .nav-btn-archive {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      line-height: 1.2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .nav-btn-calendar {
+      background-color: #37474f;
+    }
+    .nav-btn-archive {
+      background-color: #455a64;
+    }
+    .btn-large {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    /* Bottom Functional Toggle Buttons (Distinct Utility Styling) */
     .bottom-nav {
       display: flex;
       gap: 10px;
@@ -136,31 +130,29 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: white;
+      color: #333;
       text-align: center;
       padding: 12px 10px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #b0bec5;
+      background-color: #eceff1;
       cursor: pointer;
       font-weight: bold;
       line-height: 1.2;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       font-family: Arial, sans-serif;
     }
-    .bottom-btn-subscribe {
-      background-color: #004085;
-    }
-    .bottom-btn-install {
-      background-color: #1d5c5a;
+    .bottom-nav-btn:hover {
+      background-color: #cfd8dc;
     }
 
-    /* Load More / Reduce Buttons */
+    /* Muted Functional Toggle Buttons (Replacing Glaring Yellow) */
     .load-more-btn, .reduce-btn {
       display: block;
       width: 100%;
-      background-color: #ffeb3b;
-      color: #222;
-      border: 1px solid #fbc02d;
+      background-color: #e2e8f0;
+      color: #334155;
+      border: 1px solid #cbd5e1;
       padding: 12px;
       border-radius: 8px;
       font-weight: bold;
@@ -168,19 +160,18 @@
       cursor: pointer;
       text-align: center;
       margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       font-family: Arial, sans-serif;
     }
     .load-more-btn:hover, .reduce-btn:hover {
-      background-color: #fdd835;
+      background-color: #cbd5e1;
     }
 
-    /* Buttons */
     .sub-btn {
       display: block;
       width: 100%;
       box-sizing: border-box;
-      background-color: #004085;
+      background-color: #37474f;
       color: white;
       text-align: center;
       padding: 12px;
@@ -212,13 +203,13 @@
 
 <div class="container">
 
-  <!-- A. Title & Subtitle (Branding Applied) -->
+  <!-- Title & Subtitle -->
   <div class="app-title">
     <div class="app-title-line1">National Symphony Chorus Ireland</div>
     <div class="app-title-line2">Member Information Hub</div>
   </div>
 
-  <!-- Top Side-by-Side Navigation Buttons -->
+  <!-- Secondary Navigation Buttons -->
   <div class="top-nav">
     <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" class="nav-btn-calendar">
       <span class="btn-large">Choir</span>
@@ -242,11 +233,11 @@
 
   <!-- Bottom Toggle Navigation Buttons -->
   <div class="bottom-nav">
-    <button onclick="toggleSection('subscribe-section')" class="bottom-nav-btn bottom-btn-subscribe">
+    <button onclick="toggleSection('subscribe-section')" class="bottom-nav-btn">
       <span class="btn-large">Subscribe to</span>
       <span class="btn-large">Choir Calendar</span>
     </button>
-    <button onclick="toggleSection('install-section')" class="bottom-nav-btn bottom-btn-install">
+    <button onclick="toggleSection('install-section')" class="bottom-nav-btn">
       <span class="btn-large">Install Hub</span>
       <span class="btn-large">On Your Phone</span>
     </button>
@@ -296,13 +287,6 @@
 <script>
   const WORKER_URL = 'https://nsc-calendar-proxy.rtephilschedule.workers.dev';
   const DIRECTOR_TIMESTAMP_URL = 'https://script.google.com/macros/s/AKfycbxU4cm3ykUNinWSMzccfS-FMYlgFmjNb2vtC0cbMd2mdDWYuaCEvXEa80jzSEgY_tPMPQ/exec';
-  
-  const THEMES = [
-    { cardClass: 'card-event-1', borderColor: '#004085' },
-    { cardClass: 'card-event-2', borderColor: '#bf360c' },
-    { cardClass: 'card-event-3', borderColor: '#004d40' },
-    { cardClass: 'card-event-4', borderColor: '#311b92' }
-  ];
 
   let cachedEvents = [];
   let showAllFuture = false;
@@ -330,7 +314,6 @@
       }
 
       renderEvents();
-
       loadDirectorTimestamp();
       loadManagerNotes();
 
@@ -376,11 +359,10 @@
 
     let fullHTML = '';
 
+    // --- 1. First Forthcoming Rehearsal (Highest Priority Card) ---
     if (targetDates.length > 0) {
       const dateKey = targetDates[0];
       const dayEvents = dateMap.get(dateKey);
-      const theme = THEMES[0];
-
       const [year, month, day] = dateKey.split('-').map(Number);
       const dateObj = new Date(year, month - 1, day);
       const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -393,18 +375,19 @@
       const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
 
       fullHTML += `
-        <div class="card ${theme.cardClass}">
+        <div class="card card-event-1">
           <h3>${formattedDateTitle}</h3>
           <div class="card-inner">
             ${eventsDetailsHTML}
-            <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-              Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
+            <div class="parking-banner" style="border-left-color: #003366;">
+              Parking: <a href="${nchUrl}" target="_blank" style="color: #003366; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
             </div>
           </div>
         </div>
       `;
     }
 
+    // --- 2. Notes from Chorus Director (Second Priority) ---
     fullHTML += `
       <div class="card card-director">
         <h3>Notes from Chorus Director</h3>
@@ -420,6 +403,7 @@
       </div>
     `;
 
+    // --- 3. Notes from Choir Manager (Third Priority) ---
     fullHTML += `
       <div class="card card-manager">
         <h3>Notes from Choir Manager</h3>
@@ -435,10 +419,10 @@
       </div>
     `;
 
+    // --- 4. Remaining Future Events ---
     for (let i = 1; i < targetDates.length; i++) {
       const dateKey = targetDates[i];
       const dayEvents = dateMap.get(dateKey);
-      const theme = THEMES[i % THEMES.length];
 
       const [year, month, day] = dateKey.split('-').map(Number);
       const dateObj = new Date(year, month - 1, day);
@@ -452,12 +436,12 @@
       const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
 
       fullHTML += `
-        <div class="card ${theme.cardClass}">
+        <div class="card card-event-secondary">
           <h3>${formattedDateTitle}</h3>
           <div class="card-inner">
             ${eventsDetailsHTML}
-            <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-              Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
+            <div class="parking-banner" style="border-left-color: #78909c;">
+              Parking: <a href="${nchUrl}" target="_blank" style="color: #455a64; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
             </div>
           </div>
         </div>
@@ -502,7 +486,7 @@
       <div class="card card-event-1">
         <h3>Schedule Notice</h3>
         <div class="card-inner">
-          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #004085; font-weight: bold;">Choir Calendar</a> directly.</p>
+          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #003366; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
       </div>`;
   }
@@ -608,7 +592,7 @@
         <title>Apple & Outlook Calendar Setup Guide</title>
         <style>
           body { font-family: Arial, sans-serif; background: #f8f9fa; color: #333; padding: 20px; line-height: 1.6; }
-          .box { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-top: 4px solid #546e7a; }
+          .box { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-top: 4px solid #37474f; }
           h2 { color: #37474f; margin-top: 0; }
           input { width: 100%; padding: 10px; font-size: 13px; box-sizing: border-box; background: #f1f3f4; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; font-family: monospace; }
           ul { padding-left: 20px; }
