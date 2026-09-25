@@ -146,7 +146,7 @@
       background-color: #4e342e;
     }
 
-    /* Load More Button */
+    /* Load More / Reduce Buttons */
     .load-more-btn {
       display: block;
       width: 100%;
@@ -165,6 +165,26 @@
     }
     .load-more-btn:hover {
       background-color: #003366;
+    }
+
+    .reduce-btn {
+      display: block;
+      width: 100%;
+      background-color: #546e7a;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: Arial, sans-serif;
+    }
+    .reduce-btn:hover {
+      background-color: #455a64;
     }
 
     /* Buttons */
@@ -463,11 +483,17 @@
       `;
     }
 
-    // --- 5. "Show All Future Events" Button ---
+    // --- 5. Toggle Button ("Show All Future Events" or "Reduce Number of Future Events Displayed") ---
     if (!showAllFuture && hasEventsBeyondLimit) {
       fullHTML += `
         <button class="load-more-btn" onclick="showAllEvents()">
           Show All Future Events
+        </button>
+      `;
+    } else if (showAllFuture) {
+      fullHTML += `
+        <button class="reduce-btn" onclick="reduceEvents()">
+          Reduce Number of Future Events Displayed
         </button>
       `;
     }
@@ -481,6 +507,14 @@
     loadDirectorTimestamp();
     loadManagerNotes();
     window.scrollBy({ top: 300, behavior: 'smooth' });
+  }
+
+  function reduceEvents() {
+    showAllFuture = false;
+    renderEvents();
+    loadDirectorTimestamp();
+    loadManagerNotes();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function showFallbackNotice() {
