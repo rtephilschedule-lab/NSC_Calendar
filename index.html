@@ -297,7 +297,7 @@
   ];
 
   let cachedEvents = [];
-  let extraMonthsLoaded = 0;
+  let showAllFuture = false;
 
   function toggleSection(sectionId) {
     const section = document.getElementById(sectionId);
@@ -335,24 +335,30 @@
 
   function renderEvents() {
     const now = new Date();
-    // Current month + following month + any extra months loaded via button clicks
-    const limitDate = new Date(now.getFullYear(), now.getMonth() + 2 + extraMonthsLoaded, 0);
+    const initialLimitDate = new Date(now.getFullYear(), now.getMonth() + 2, 0);
 
-    // Group by date and filter up to the limit date
+    let hasEventsBeyondLimit = false;
+
+    // Check if there are events past the following month
+    cachedEvents.forEach(ev => {
+      const [year, month, day] = ev.startDateStr.split('-').map(Number);
+      const evDate = new Date(year, month - 1, day);
+      if (evDate > initialLimitDate) {
+        hasEventsBeyondLimit = true;
+      }
+    });
+
+    // Group by date and filter based on showAllFuture flag
     const dateMap = new Map();
-    let hasMoreEvents = false;
-
     cachedEvents.forEach(ev => {
       const [year, month, day] = ev.startDateStr.split('-').map(Number);
       const evDate = new Date(year, month - 1, day);
       
-      if (evDate <= limitDate) {
+      if (showAllFuture || evDate <= initialLimitDate) {
         if (!dateMap.has(ev.startDateStr)) {
           dateMap.set(ev.startDateStr, []);
         }
         dateMap.get(ev.startDateStr).push(ev);
-      } else {
-        hasMoreEvents = true;
       }
     });
 
@@ -457,11 +463,11 @@
       `;
     }
 
-    // --- 5. "Show events for the following month" Button ---
-    if (hasMoreEvents) {
+    // --- 5. "Show All Future Events" Button ---
+    if (!showAllFuture && hasEventsBeyondLimit) {
       fullHTML += `
-        <button class="load-more-btn" onclick="showNextMonth()">
-          Show events for the following month
+        <button class="load-more-btn" onclick="showAllEvents()">
+          Show All Future Events
         </button>
       `;
     }
@@ -469,10 +475,9 @@
     document.getElementById('events-container').innerHTML = fullHTML;
   }
 
-  function showNextMonth() {
-    extraMonthsLoaded++;
+  function showAllEvents() {
+    showAllFuture = true;
     renderEvents();
-    // Re-fetch dynamic stamps since innerHTML is rewritten
     loadDirectorTimestamp();
     loadManagerNotes();
     window.scrollBy({ top: 300, behavior: 'smooth' });
