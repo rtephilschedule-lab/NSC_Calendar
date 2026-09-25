@@ -297,21 +297,34 @@
         return;
       }
 
-      // Group by date
+      // Compute limit date: End of the following calendar month
+      const now = new Date();
+      const limitDate = new Date(now.getFullYear(), now.getMonth() + 2, 0); // Day 0 of month + 2 gets the last day of the next month
+
+      // Group by date and filter up to the limit date
       const dateMap = new Map();
       futureEvents.forEach(ev => {
-        if (!dateMap.has(ev.startDateStr)) {
-          dateMap.set(ev.startDateStr, []);
+        const [year, month, day] = ev.startDateStr.split('-').map(Number);
+        const evDate = new Date(year, month - 1, day);
+        
+        if (evDate <= limitDate) {
+          if (!dateMap.has(ev.startDateStr)) {
+            dateMap.set(ev.startDateStr, []);
+          }
+          dateMap.get(ev.startDateStr).push(ev);
         }
-        dateMap.get(ev.startDateStr).push(ev);
       });
 
-      const sortedDates = Array.from(dateMap.keys()).sort();
-      const targetDates = sortedDates.slice(0, 4);
+      const targetDates = Array.from(dateMap.keys()).sort();
+
+      if (targetDates.length === 0) {
+        showFallbackNotice();
+        return;
+      }
 
       let fullHTML = '';
 
-      // --- 1. Event 1 ---
+      // --- 1. First Upcoming Event ---
       if (targetDates.length > 0) {
         const dateKey = targetDates[0];
         const dayEvents = dateMap.get(dateKey);
@@ -373,7 +386,7 @@
         </div>
       `;
 
-      // --- 4. Events 2, 3, 4 ---
+      // --- 4. Remaining Events within Current & Following Month ---
       for (let i = 1; i < targetDates.length; i++) {
         const dateKey = targetDates[i];
         const dayEvents = dateMap.get(dateKey);
