@@ -32,9 +32,9 @@
     }
     .app-title-line2 {
       font-style: italic;
-      font-weight: bold;
-      font-size: 18px;
-      color: #555;
+      font-weight: 700;
+      font-size: 20px;
+      color: #7c3aed;
       margin-top: 5px;
     }
 
@@ -116,6 +116,36 @@
     .card-app-install { background-color: #efebe9; border-color: #4e342e; }
     .card-app-install h3 { color: #4e342e; }
 
+    /* Bottom Toggle Navigation Buttons */
+    .bottom-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .bottom-nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 12px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1.2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: Arial, sans-serif;
+    }
+    .bottom-btn-subscribe {
+      background-color: #37474f;
+    }
+    .bottom-btn-install {
+      background-color: #4e342e;
+    }
+
     /* Buttons */
     .sub-btn {
       display: block;
@@ -181,6 +211,57 @@
     </div>
   </div>
 
+  <!-- Bottom Toggle Navigation Buttons -->
+  <div class="bottom-nav">
+    <button onclick="toggleSection('subscribe-section')" class="bottom-nav-btn bottom-btn-subscribe">
+      <span class="btn-large">Subscribe to</span>
+      <span class="btn-large">Choir Calendar</span>
+    </button>
+    <button onclick="toggleSection('install-section')" class="bottom-nav-btn bottom-btn-install">
+      <span class="btn-large">Install Hub</span>
+      <span class="btn-large">On Your Phone</span>
+    </button>
+  </div>
+
+  <!-- Collapsible: Subscribe to Choir Calendar -->
+  <div id="subscribe-section" class="card card-subscribe" style="display: none;">
+    <h3>Subscribe to Choir Calendar</h3>
+    <div class="card-inner">
+      <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add online choir calendar to your personal calendar app. Changes will sync automatically over time.</p>
+      
+      <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
+        Subscribe with Google Calendar
+      </a>
+      <button onclick="copyAndOpenInstructions(this)" class="sub-btn sub-btn-alt">
+        Copy Link for Apple / Outlook Calendar
+      </button>
+    </div>
+  </div>
+
+  <!-- Collapsible: Install Member Information Hub On Your Phone -->
+  <div id="install-section" class="card card-app-install" style="display: none;">
+    <h3>Install Member Information Hub On Your Phone</h3>
+    <div class="card-inner">
+      <p style="margin-top: 0; font-size: 14px; margin-bottom: 10px;">You can save this page directly to your home screen for quick, one-tap access:</p>
+      
+      <div style="font-size: 13px; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+        <p style="margin: 0 0 6px 0;"><strong>Android (Chrome / Samsung Internet):</strong></p>
+        <ol style="margin: 0 0 12px 20px; padding: 0;">
+          <li>Tap the menu icon (three dots in top-right).</li>
+          <li>Select <strong>Install and create shortcut</strong> (or <em>Add to Home screen</em>).</li>
+          <li>Confirm by tapping <strong>Install</strong> or <strong>Add</strong>.</li>
+        </ol>
+
+        <p style="margin: 0 0 6px 0;"><strong>iPhone / iPad (Safari):</strong></p>
+        <ol style="margin: 0 0 0 20px; padding: 0;">
+          <li>Tap the <strong>Share</strong> button at the bottom of the screen.</li>
+          <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+          <li>Tap <strong>Add</strong> in the top-right corner.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -193,6 +274,16 @@
     { cardClass: 'card-event-3', borderColor: '#004d40' },
     { cardClass: 'card-event-4', borderColor: '#311b92' }
   ];
+
+  function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section.style.display === 'none') {
+      section.style.display = 'block';
+      section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      section.style.display = 'none';
+    }
+  }
 
   async function loadDynamicEvents() {
     try {
@@ -311,49 +402,6 @@
           </div>
         `;
       }
-
-      // --- 5. Subscribe to Choir Calendar ---
-      fullHTML += `
-        <div class="card card-subscribe">
-          <h3>Subscribe to Choir Calendar</h3>
-          <div class="card-inner">
-            <p style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Add online choir calendar to your personal calendar app. Changes will sync automatically over time.</p>
-            
-            <a href="https://calendar.google.com/calendar/u/0?cid=cnRlcGhpbHNjaGVkdWxlQGdtYWlsLmNvbQ" target="_blank" class="sub-btn">
-              Subscribe with Google Calendar
-            </a>
-            <button onclick="copyAndOpenInstructions(this)" class="sub-btn sub-btn-alt">
-              Copy Link for Apple / Outlook Calendar
-            </button>
-          </div>
-        </div>
-      `;
-
-      // --- 6. Install Member Information Hub On Your Phone ---
-      fullHTML += `
-        <div class="card card-app-install">
-          <h3>Install Member Information Hub On Your Phone</h3>
-          <div class="card-inner">
-            <p style="margin-top: 0; font-size: 14px; margin-bottom: 10px;">You can save this page directly to your home screen for quick, one-tap access:</p>
-            
-            <div style="font-size: 13px; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-              <p style="margin: 0 0 6px 0;"><strong>Android (Chrome / Samsung Internet):</strong></p>
-              <ol style="margin: 0 0 12px 20px; padding: 0;">
-                <li>Tap the menu icon (three dots in top-right).</li>
-                <li>Select <strong>Install and create shortcut</strong> (or <em>Add to Home screen</em>).</li>
-                <li>Confirm by tapping <strong>Install</strong> or <strong>Add</strong>.</li>
-              </ol>
-
-              <p style="margin: 0 0 6px 0;"><strong>iPhone / iPad (Safari):</strong></p>
-              <ol style="margin: 0 0 0 20px; padding: 0;">
-                <li>Tap the <strong>Share</strong> button at the bottom of the screen.</li>
-                <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
-                <li>Tap <strong>Add</strong> in the top-right corner.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      `;
 
       document.getElementById('events-container').innerHTML = fullHTML;
 
