@@ -18,7 +18,7 @@
       margin: 0 auto;
     }
     
-    /* A. Title (Increased by ~20%) */
+    /* A. Title */
     .app-title {
       text-align: center;
       margin-bottom: 20px;
@@ -401,12 +401,12 @@
       `;
     }
 
-    // --- 2. Notes from Chorus Director (Timestamp in Bold) ---
+    // --- 2. Notes from Chorus Director (Bright Red & Bold Timestamp) ---
     fullHTML += `
       <div class="card card-director">
         <h3>Notes from Chorus Director</h3>
         <div class="card-inner">
-          <p id="director-timestamp" style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px; font-weight: bold;">Last Updated: Loading...</p>
+          <p id="director-timestamp" style="font-size: 13px; color: #d32f2f; margin-top: 0; margin-bottom: 8px; font-weight: bold;">Last Updated: Loading...</p>
           <div style="position: relative; overflow: hidden; height: 440px; border: 1px solid #ccc; background: #fff; border-radius: 4px; margin-bottom: 8px;">
             <iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview" style="position: absolute; top: -40px; left: 0; width: 100%; height: calc(100% + 40px); border: none;"></iframe>
           </div>
@@ -417,12 +417,12 @@
       </div>
     `;
 
-    // --- 3. Notes from Choir Manager (Timestamp in Bold, text size ~16px) ---
+    // --- 3. Notes from Choir Manager (Bright Red & Bold Timestamp, text size ~16px) ---
     fullHTML += `
       <div class="card card-manager">
         <h3>Notes from Choir Manager</h3>
         <div class="card-inner">
-          <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px; font-weight: bold;" id="manager-timestamp">Last Updated: Loading...</p>
+          <p style="font-size: 13px; color: #d32f2f; margin-top: 0; margin-bottom: 8px; font-weight: bold;" id="manager-timestamp">Last Updated: Loading...</p>
           <div id="manager-content" style="font-size: 16px; margin-bottom: 12px;">
             <em>No notes currently available.</em>
           </div>
@@ -553,7 +553,7 @@
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; color: #222; line-height: 1.6; max-width: 700px; margin: 0 auto; }
           h2 { color: #4a148c; border-bottom: 2px solid #4a148c; padding-bottom: 8px; margin-top: 0; }
-          .timestamp { font-size: 14px; color: #555; margin-bottom: 20px; font-style: italic; font-weight: bold; }
+          .timestamp { font-size: 14px; color: #d32f2f; margin-bottom: 20px; font-style: italic; font-weight: bold; }
           .print-btn { background: #4a148c; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 30px; }
           @media print { .print-btn { display: none; } }
         </style>
