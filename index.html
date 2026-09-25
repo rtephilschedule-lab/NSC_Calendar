@@ -18,7 +18,7 @@
       margin: 0 auto;
     }
     
-    /* A. Title & Subtitle */
+    /* A. Title & Subtitle (Updated with official branding colors) */
     .app-title {
       text-align: center;
       margin-bottom: 20px;
@@ -28,8 +28,8 @@
       font-variant: small-caps;
       font-weight: bold;
       font-size: 26px;
-      background-color: #000000;
-      color: #ffffff;
+      background-color: #e68a2e;
+      color: #000000;
       padding: 12px 10px;
       border-radius: 8px 8px 0 0;
       letter-spacing: 0.5px;
@@ -124,7 +124,7 @@
     .card-app-install { background-color: #e8f5f4; border-color: #1d5c5a; }
     .card-app-install h3 { color: #1d5c5a; }
 
-    /* Bottom Toggle Navigation Buttons (Reusing top nav colors) */
+    /* Bottom Toggle Navigation Buttons */
     .bottom-nav {
       display: flex;
       gap: 10px;
@@ -154,7 +154,7 @@
       background-color: #1d5c5a;
     }
 
-    /* Load More / Reduce Buttons (Bright Yellow Background) */
+    /* Load More / Reduce Buttons */
     .load-more-btn, .reduce-btn {
       display: block;
       width: 100%;
@@ -212,7 +212,7 @@
 
 <div class="container">
 
-  <!-- A. Title & Subtitle -->
+  <!-- A. Title & Subtitle (Branding Applied) -->
   <div class="app-title">
     <div class="app-title-line1">National Symphony Chorus Ireland</div>
     <div class="app-title-line2">Member Information Hub</div>
@@ -331,7 +331,6 @@
 
       renderEvents();
 
-      // Fetch dynamic data for notes
       loadDirectorTimestamp();
       loadManagerNotes();
 
@@ -347,7 +346,6 @@
 
     let hasEventsBeyondLimit = false;
 
-    // Check if there are events past the following month
     cachedEvents.forEach(ev => {
       const [year, month, day] = ev.startDateStr.split('-').map(Number);
       const evDate = new Date(year, month - 1, day);
@@ -356,7 +354,6 @@
       }
     });
 
-    // Group by date and filter based on showAllFuture flag
     const dateMap = new Map();
     cachedEvents.forEach(ev => {
       const [year, month, day] = ev.startDateStr.split('-').map(Number);
@@ -379,7 +376,6 @@
 
     let fullHTML = '';
 
-    // --- 1. First Upcoming Event ---
     if (targetDates.length > 0) {
       const dateKey = targetDates[0];
       const dayEvents = dateMap.get(dateKey);
@@ -409,7 +405,6 @@
       `;
     }
 
-    // --- 2. Notes from Chorus Director (Bright Red & Bold Timestamp) ---
     fullHTML += `
       <div class="card card-director">
         <h3>Notes from Chorus Director</h3>
@@ -425,7 +420,6 @@
       </div>
     `;
 
-    // --- 3. Notes from Choir Manager (Bright Red & Bold Timestamp, text size ~16px) ---
     fullHTML += `
       <div class="card card-manager">
         <h3>Notes from Choir Manager</h3>
@@ -441,7 +435,6 @@
       </div>
     `;
 
-    // --- 4. Remaining Events up to Limit Date ---
     for (let i = 1; i < targetDates.length; i++) {
       const dateKey = targetDates[i];
       const dayEvents = dateMap.get(dateKey);
@@ -471,7 +464,6 @@
       `;
     }
 
-    // --- 5. Toggle Button ("Show All Future Events" or "Reduce Number of Future Events Displayed") ---
     if (!showAllFuture && hasEventsBeyondLimit) {
       fullHTML += `
         <button class="load-more-btn" onclick="showAllEvents()">
