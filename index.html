@@ -317,7 +317,7 @@
   async function loadDynamicEvents() {
     try {
       const response = await fetch(WORKER_URL);
-      if (!response.ok) throw new Error('Failed to fetch calendar from worker');
+      if (!response.ok) throw new Error(`Server returned status ${response.status}`);
       
       cachedEvents = await response.json();
 
@@ -495,13 +495,45 @@
   }
 
   function showFallbackNotice() {
-    document.getElementById('events-container').innerHTML = `
+    // Renders the Director and Manager cards even if the calendar worker fails
+    let fallbackHTML = `
       <div class="card card-event-1">
         <h3>Schedule Notice</h3>
         <div class="card-inner">
-          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #1e3a8a; font-weight: bold;">Choir Calendar</a> directly.</p>
+          <p style="margin-top: 0;">Unable to load live calendar feed automatically (Server Unavailable or CORS restriction). Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #1e3a8a; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
-      </div>`;
+      </div>
+
+      <div class="card card-director">
+        <h3>Notes from Choral Director</h3>
+        <div class="card-inner">
+          <p id="director-timestamp" style="font-size: 13px; color: #d32f2f; margin-top: 0; margin-bottom: 8px; font-weight: bold;">Last Updated: Loading...</p>
+          <div style="position: relative; overflow: hidden; height: 440px; border: 1px solid #ccc; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            <iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview" style="position: absolute; top: -40px; left: 0; width: 100%; height: calc(100% + 40px); border: none;"></iframe>
+          </div>
+          <div style="text-align: right; margin-top: 5px;">
+            <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #15803d; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-manager">
+        <h3>Notes from Choir Manager</h3>
+        <div class="card-inner">
+          <p style="font-size: 13px; color: #d32f2f; margin-top: 0; margin-bottom: 8px; font-weight: bold;" id="manager-timestamp">Last Updated: Loading...</p>
+          <div id="manager-content" style="font-size: 16px; margin-bottom: 12px;">
+            <em>No notes currently available.</em>
+          </div>
+          <div style="text-align: right; margin-top: 5px;">
+            <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #7e22ce; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('events-container').innerHTML = fallbackHTML;
+    loadDirectorTimestamp();
+    loadManagerNotes();
   }
 
   loadDynamicEvents();
@@ -618,7 +650,7 @@
           <h2>Apple & Outlook Calendar Setup</h2>
           <p>The subscription link has been copied to your clipboard. If you need to copy it manually again, use the box below:</p>
           
-          <label for="urlbox"><strong>Calendar iCal Link:</strong></label>
+          <label for="urlbox"><strong>Calendar iCalLink:</strong></label>
           <input type="text" id="urlbox" value="${icalUrl}" readonly onclick="this.select();">
 
           <h3>Step-by-Step Instructions:</h3>
