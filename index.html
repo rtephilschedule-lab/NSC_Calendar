@@ -67,15 +67,28 @@
       border: 1px solid #e0e0e0;
     }
 
-    /* Hierarchy-Based Theming */
-    .card-event-1 { background-color: #eef4fc; border-color: #003366; }
-    .card-event-1 h3 { color: #003366; }
+    /* Hierarchy-Based Theming (Adjusted Loudness) */
+    /* 1. Next Forthcoming Rehearsal (100% - matching title prominence) */
+    .card-event-1 { 
+      background-color: #dbeafe; 
+      border-color: #1d4ed8; 
+      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);
+    } 
+    .card-event-1 h3 { color: #1e3a8a; }
 
-    .card-director { background-color: #f1f8f2; border-color: #1b5e20; }
-    .card-director h3 { color: #1b5e20; }
+    /* 2. Notes from Choral Director (75% prominence) */
+    .card-director { 
+      background-color: #dcfce7; 
+      border-color: #22c55e; 
+    } 
+    .card-director h3 { color: #15803d; }
 
-    .card-manager { background-color: #f7f2fb; border-color: #4a148c; }
-    .card-manager h3 { color: #4a148c; }
+    /* 3. Notes from Choir Manager (50% prominence) */
+    .card-manager { 
+      background-color: #f3e8ff; 
+      border-color: #c084fc; 
+    } 
+    .card-manager h3 { color: #7e22ce; }
 
     .card-event-secondary { background-color: #f8f9fa; border-color: #78909c; }
     .card-event-secondary h3 { color: #455a64; }
@@ -146,10 +159,9 @@
       background-color: #cfd8dc;
     }
 
-    /* Refined, Polished Toggle Button (Replacing Bland Gray) */
+    /* Polished Toggle Button */
     .load-more-btn, .reduce-btn {
       display: block;
-      width: 100vh;
       width: 100%;
       background-color: #2563eb;
       color: white;
@@ -380,25 +392,25 @@
           <h3>${formattedDateTitle}</h3>
           <div class="card-inner">
             ${eventsDetailsHTML}
-            <div class="parking-banner" style="border-left-color: #003366;">
-              Parking: <a href="${nchUrl}" target="_blank" style="color: #003366; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
+            <div class="parking-banner" style="border-left-color: #1d4ed8;">
+              Parking: <a href="${nchUrl}" target="_blank" style="color: #1e3a8a; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
             </div>
           </div>
         </div>
       `;
     }
 
-    // --- 2. Notes from Chorus Director (Second Priority) ---
+    // --- 2. Notes from Choral Director (Second Priority) ---
     fullHTML += `
       <div class="card card-director">
-        <h3>Notes from Chorus Director</h3>
+        <h3>Notes from Choral Director</h3>
         <div class="card-inner">
           <p id="director-timestamp" style="font-size: 13px; color: #d32f2f; margin-top: 0; margin-bottom: 8px; font-weight: bold;">Last Updated: Loading...</p>
           <div style="position: relative; overflow: hidden; height: 440px; border: 1px solid #ccc; background: #fff; border-radius: 4px; margin-bottom: 8px;">
             <iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview" style="position: absolute; top: -40px; left: 0; width: 100%; height: calc(100% + 40px); border: none;"></iframe>
           </div>
           <div style="text-align: right; margin-top: 5px;">
-            <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #1b5e20; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
+            <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #15803d; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
           </div>
         </div>
       </div>
@@ -414,7 +426,7 @@
             <em>No notes currently available.</em>
           </div>
           <div style="text-align: right; margin-top: 5px;">
-            <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
+            <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #7e22ce; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
           </div>
         </div>
       </div>
@@ -487,7 +499,7 @@
       <div class="card card-event-1">
         <h3>Schedule Notice</h3>
         <div class="card-inner">
-          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #003366; font-weight: bold;">Choir Calendar</a> directly.</p>
+          <p style="margin-top: 0;">Unable to load live calendar feed automatically. Please view the <a href="https://calendar.google.com/calendar/embed?src=rtephilschedule%40gmail.com&ctz=Europe%2FDublin" target="_blank" style="color: #1e3a8a; font-weight: bold;">Choir Calendar</a> directly.</p>
         </div>
       </div>`;
   }
@@ -551,9 +563,9 @@
         <title>Notes from Choir Manager - Printable View</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; color: #222; line-height: 1.6; max-width: 700px; margin: 0 auto; }
-          h2 { color: #4a148c; border-bottom: 2px solid #4a148c; padding-bottom: 8px; margin-top: 0; }
+          h2 { color: #7e22ce; border-bottom: 2px solid #7e22ce; padding-bottom: 8px; margin-top: 0; }
           .timestamp { font-size: 14px; color: #d32f2f; margin-bottom: 20px; font-style: italic; font-weight: bold; }
-          .print-btn { background: #4a148c; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 30px; }
+          .print-btn { background: #7e22ce; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 30px; }
           @media print { .print-btn { display: none; } }
         </style>
       </head>
