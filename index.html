@@ -146,6 +146,27 @@
       background-color: #4e342e;
     }
 
+    /* Load More Button */
+    .load-more-btn {
+      display: block;
+      width: 100%;
+      background-color: #004085;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: Arial, sans-serif;
+    }
+    .load-more-btn:hover {
+      background-color: #003366;
+    }
+
     /* Buttons */
     .sub-btn {
       display: block;
@@ -275,6 +296,9 @@
     { cardClass: 'card-event-4', borderColor: '#311b92' }
   ];
 
+  let cachedEvents = [];
+  let extraMonthsLoaded = 0;
+
   function toggleSection(sectionId) {
     const section = document.getElementById(sectionId);
     if (section.style.display === 'none') {
@@ -290,133 +314,14 @@
       const response = await fetch(WORKER_URL);
       if (!response.ok) throw new Error('Failed to fetch calendar from worker');
       
-      const futureEvents = await response.json();
+      cachedEvents = await response.json();
 
-      if (!Array.isArray(futureEvents) || futureEvents.length === 0) {
+      if (!Array.isArray(cachedEvents) || cachedEvents.length === 0) {
         showFallbackNotice();
         return;
       }
 
-      // Compute limit date: End of the following calendar month
-      const now = new Date();
-      const limitDate = new Date(now.getFullYear(), now.getMonth() + 2, 0); // Day 0 of month + 2 gets the last day of the next month
-
-      // Group by date and filter up to the limit date
-      const dateMap = new Map();
-      futureEvents.forEach(ev => {
-        const [year, month, day] = ev.startDateStr.split('-').map(Number);
-        const evDate = new Date(year, month - 1, day);
-        
-        if (evDate <= limitDate) {
-          if (!dateMap.has(ev.startDateStr)) {
-            dateMap.set(ev.startDateStr, []);
-          }
-          dateMap.get(ev.startDateStr).push(ev);
-        }
-      });
-
-      const targetDates = Array.from(dateMap.keys()).sort();
-
-      if (targetDates.length === 0) {
-        showFallbackNotice();
-        return;
-      }
-
-      let fullHTML = '';
-
-      // --- 1. First Upcoming Event ---
-      if (targetDates.length > 0) {
-        const dateKey = targetDates[0];
-        const dayEvents = dateMap.get(dateKey);
-        const theme = THEMES[0];
-
-        const [year, month, day] = dateKey.split('-').map(Number);
-        const dateObj = new Date(year, month - 1, day);
-        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
-        let eventsDetailsHTML = '';
-        dayEvents.forEach(ev => {
-          eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
-        });
-
-        const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
-
-        fullHTML += `
-          <div class="card ${theme.cardClass}">
-            <h3>${formattedDateTitle}</h3>
-            <div class="card-inner">
-              ${eventsDetailsHTML}
-              <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      // --- 2. Notes from Chorus Director ---
-      fullHTML += `
-        <div class="card card-director">
-          <h3>Notes from Chorus Director</h3>
-          <div class="card-inner">
-            <p id="director-timestamp" style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;">Last Updated: Loading...</p>
-            <div style="position: relative; overflow: hidden; height: 440px; border: 1px solid #ccc; background: #fff; border-radius: 4px; margin-bottom: 8px;">
-              <iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview" style="position: absolute; top: -40px; left: 0; width: 100%; height: calc(100% + 40px); border: none;"></iframe>
-            </div>
-            <div style="text-align: right; margin-top: 5px;">
-              <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #1b5e20; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // --- 3. Notes from Choir Manager ---
-      fullHTML += `
-        <div class="card card-manager">
-          <h3>Notes from Choir Manager</h3>
-          <div class="card-inner">
-            <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;" id="manager-timestamp">Last Updated: Loading...</p>
-            <div id="manager-content" style="font-size: 14px; margin-bottom: 12px;">
-              <em>No notes currently available.</em>
-            </div>
-            <div style="text-align: right; margin-top: 5px;">
-              <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // --- 4. Remaining Events within Current & Following Month ---
-      for (let i = 1; i < targetDates.length; i++) {
-        const dateKey = targetDates[i];
-        const dayEvents = dateMap.get(dateKey);
-        const theme = THEMES[i % THEMES.length];
-
-        const [year, month, day] = dateKey.split('-').map(Number);
-        const dateObj = new Date(year, month - 1, day);
-        const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
-        let eventsDetailsHTML = '';
-        dayEvents.forEach(ev => {
-          eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
-        });
-
-        const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
-
-        fullHTML += `
-          <div class="card ${theme.cardClass}">
-            <h3>${formattedDateTitle}</h3>
-            <div class="card-inner">
-              ${eventsDetailsHTML}
-              <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
-                Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      document.getElementById('events-container').innerHTML = fullHTML;
+      renderEvents();
 
       // Fetch dynamic data for notes
       loadDirectorTimestamp();
@@ -426,6 +331,151 @@
       console.error('Error loading calendar events:', err);
       showFallbackNotice();
     }
+  }
+
+  function renderEvents() {
+    const now = new Date();
+    // Current month + following month + any extra months loaded via button clicks
+    const limitDate = new Date(now.getFullYear(), now.getMonth() + 2 + extraMonthsLoaded, 0);
+
+    // Group by date and filter up to the limit date
+    const dateMap = new Map();
+    let hasMoreEvents = false;
+
+    cachedEvents.forEach(ev => {
+      const [year, month, day] = ev.startDateStr.split('-').map(Number);
+      const evDate = new Date(year, month - 1, day);
+      
+      if (evDate <= limitDate) {
+        if (!dateMap.has(ev.startDateStr)) {
+          dateMap.set(ev.startDateStr, []);
+        }
+        dateMap.get(ev.startDateStr).push(ev);
+      } else {
+        hasMoreEvents = true;
+      }
+    });
+
+    const targetDates = Array.from(dateMap.keys()).sort();
+
+    if (targetDates.length === 0) {
+      showFallbackNotice();
+      return;
+    }
+
+    let fullHTML = '';
+
+    // --- 1. First Upcoming Event ---
+    if (targetDates.length > 0) {
+      const dateKey = targetDates[0];
+      const dayEvents = dateMap.get(dateKey);
+      const theme = THEMES[0];
+
+      const [year, month, day] = dateKey.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      let eventsDetailsHTML = '';
+      dayEvents.forEach(ev => {
+        eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
+      });
+
+      const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
+
+      fullHTML += `
+        <div class="card ${theme.cardClass}">
+          <h3>${formattedDateTitle}</h3>
+          <div class="card-inner">
+            ${eventsDetailsHTML}
+            <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
+              Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 2. Notes from Chorus Director ---
+    fullHTML += `
+      <div class="card card-director">
+        <h3>Notes from Chorus Director</h3>
+        <div class="card-inner">
+          <p id="director-timestamp" style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;">Last Updated: Loading...</p>
+          <div style="position: relative; overflow: hidden; height: 440px; border: 1px solid #ccc; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            <iframe src="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/preview" style="position: absolute; top: -40px; left: 0; width: 100%; height: calc(100% + 40px); border: none;"></iframe>
+          </div>
+          <div style="text-align: right; margin-top: 5px;">
+            <a href="https://docs.google.com/document/d/1dxqo6xmYl27tcO-lZ_a3j3n1CNiGwBYq702fNI1bBKk/view" target="_blank" style="color: #1b5e20; font-weight: bold; font-size: 14px; text-decoration: none;">Open as separate printable file</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // --- 3. Notes from Choir Manager ---
+    fullHTML += `
+      <div class="card card-manager">
+        <h3>Notes from Choir Manager</h3>
+        <div class="card-inner">
+          <p style="font-size: 12px; color: #555; margin-top: 0; margin-bottom: 8px;" id="manager-timestamp">Last Updated: Loading...</p>
+          <div id="manager-content" style="font-size: 14px; margin-bottom: 12px;">
+            <em>No notes currently available.</em>
+          </div>
+          <div style="text-align: right; margin-top: 5px;">
+            <a href="javascript:void(0);" onclick="openManagerPrintView()" style="color: #4a148c; font-weight: bold; font-size: 13px; text-decoration: none;">Open as separate printable file</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // --- 4. Remaining Events up to Limit Date ---
+    for (let i = 1; i < targetDates.length; i++) {
+      const dateKey = targetDates[i];
+      const dayEvents = dateMap.get(dateKey);
+      const theme = THEMES[i % THEMES.length];
+
+      const [year, month, day] = dateKey.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const formattedDateTitle = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      let eventsDetailsHTML = '';
+      dayEvents.forEach(ev => {
+        eventsDetailsHTML += `<p style="margin-top: 0; margin-bottom: 8px;"><strong>${ev.summary}</strong><br><strong>Time:</strong> ${ev.timeStr}<br><strong>Venue:</strong> ${ev.location}</p>`;
+      });
+
+      const nchUrl = `https://www.nch.ie/all-events-listing/?search=&from=${dateKey}`;
+
+      fullHTML += `
+        <div class="card ${theme.cardClass}">
+          <h3>${formattedDateTitle}</h3>
+          <div class="card-inner">
+            ${eventsDetailsHTML}
+            <div class="parking-banner" style="border-left-color: ${theme.borderColor};">
+              Parking: <a href="${nchUrl}" target="_blank" style="color: ${theme.borderColor}; font-weight: bold; text-decoration: underline;">Check NCH Calendar for any other events today</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 5. "Show events for the following month" Button ---
+    if (hasMoreEvents) {
+      fullHTML += `
+        <button class="load-more-btn" onclick="showNextMonth()">
+          Show events for the following month
+        </button>
+      `;
+    }
+
+    document.getElementById('events-container').innerHTML = fullHTML;
+  }
+
+  function showNextMonth() {
+    extraMonthsLoaded++;
+    renderEvents();
+    // Re-fetch dynamic stamps since innerHTML is rewritten
+    loadDirectorTimestamp();
+    loadManagerNotes();
+    window.scrollBy({ top: 300, behavior: 'smooth' });
   }
 
   function showFallbackNotice() {
@@ -449,12 +499,14 @@
           const dateObj = new Date(data.modifiedTime);
           const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           const formattedTime = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          document.getElementById('director-timestamp').innerText = `Last Updated: ${formattedTime} on ${formattedDate}`;
+          const el = document.getElementById('director-timestamp');
+          if (el) el.innerText = `Last Updated: ${formattedTime} on ${formattedDate}`;
         }
       }
     } catch (e) {
       console.error('Failed to load director timestamp', e);
-      document.getElementById('director-timestamp').innerText = 'Last Updated: Unavailable';
+      const el = document.getElementById('director-timestamp');
+      if (el) el.innerText = 'Last Updated: Unavailable';
     }
   }
 
@@ -464,13 +516,15 @@
       if (response.ok) {
         const data = await response.json();
         if (data.content) {
-          document.getElementById('manager-content').innerHTML = data.content;
+          const contentEl = document.getElementById('manager-content');
+          if (contentEl) contentEl.innerHTML = data.content;
         }
         if (data.modifiedTime) {
           const dateObj = new Date(data.modifiedTime);
           const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           const formattedTime = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          document.getElementById('manager-timestamp').innerText = `Last Updated: ${formattedTime} on ${formattedDate}`;
+          const timeEl = document.getElementById('manager-timestamp');
+          if (timeEl) timeEl.innerText = `Last Updated: ${formattedTime} on ${formattedDate}`;
         }
       }
     } catch (e) {
@@ -479,8 +533,10 @@
   }
 
   function openManagerPrintView() {
-    const contentHTML = document.getElementById('manager-content').innerHTML;
-    const timestampText = document.getElementById('manager-timestamp').innerText;
+    const contentEl = document.getElementById('manager-content');
+    const timeEl = document.getElementById('manager-timestamp');
+    const contentHTML = contentEl ? contentEl.innerHTML : '';
+    const timestampText = timeEl ? timeEl.innerText : '';
 
     const printPageHTML = `
       <!DOCTYPE html>
